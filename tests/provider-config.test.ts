@@ -9,6 +9,7 @@ describe('withMonocartProvider', () => {
       const result = withMonocartProvider()
 
       expect(result.provider).toBe('custom')
+      // @ts-expect-error - customProviderModule exists on resolved config
       expect(result.customProviderModule).toBe('@oorabona/vitest-monocart-coverage')
       expect(result.enabled).toBe(true)
       expect(result.clean).toBe(true)
@@ -78,9 +79,13 @@ describe('withMonocartProvider', () => {
       const result = withMonocartProvider(viteConfig)
 
       // Empty config should be treated as options-only mode according to the logic
+      // @ts-expect-error - provider exists on resolved config
       expect(result.provider).toBe('custom')
+      // @ts-expect-error - customProviderModule exists on resolved config
       expect(result.customProviderModule).toBe('@oorabona/vitest-monocart-coverage')
+      // @ts-expect-error - enabled exists on resolved config
       expect(result.enabled).toBe(true)
+      // @ts-expect-error - clean exists on resolved config
       expect(result.clean).toBe(true)
     })
 
@@ -98,7 +103,9 @@ describe('withMonocartProvider', () => {
 
       const result = withMonocartProvider(viteConfig, customOptions)
 
+      // @ts-expect-error - globals exists on test config
       expect(result.test?.globals).toBe(true)
+      // @ts-expect-error - environment exists on test config
       expect(result.test?.environment).toBe('node')
       expect(result.test?.coverage?.provider).toBe('custom')
       expect(result.test?.coverage?.customOptions?.outputDir).toBe('./custom-output')
@@ -126,6 +133,7 @@ describe('withMonocartProvider', () => {
             allowExternal: true,
             processingConcurrency: 4,
             reporter: ['text', 'json'],
+            // @ts-expect-error - customOptions exists in coverage config
             customOptions: {
               outputDir: './existing-coverage',
               name: 'Existing Coverage',
@@ -143,6 +151,7 @@ describe('withMonocartProvider', () => {
 
       const coverage = result.test?.coverage
       expect(coverage?.provider).toBe('custom')
+      // @ts-expect-error - customProviderModule exists on resolved config
       expect(coverage?.customProviderModule).toBe('@oorabona/vitest-monocart-coverage')
       expect(coverage?.enabled).toBe(false) // preserved
       expect(coverage?.clean).toBe(false) // preserved
@@ -181,6 +190,7 @@ describe('withMonocartProvider', () => {
       const result = withMonocartProvider(viteConfig)
 
       expect(result.plugins).toEqual([])
+      // @ts-expect-error - globals exists on test config
       expect(result.test?.globals).toBe(true)
       expect(result.test?.coverage?.provider).toBe('custom')
       expect(result.test?.coverage?.customOptions).toEqual({
@@ -204,7 +214,9 @@ describe('withMonocartProvider', () => {
 
       const result = withMonocartProvider(viteConfig, customOptions)
 
+      // @ts-expect-error - environment exists on test config
       expect(result.test?.environment).toBe('jsdom')
+      // @ts-expect-error - globals exists on test config
       expect(result.test?.globals).toBe(false)
       expect(result.test?.coverage?.enabled).toBe(true)
       expect(result.test?.coverage?.customOptions?.outputDir).toBe('./jsdom-coverage')
@@ -258,6 +270,7 @@ describe('withMonocartProvider', () => {
 
       const result = withMonocartProvider(configLikeObject)
 
+      // @ts-expect-error - globals exists on test config
       expect(result.test?.globals).toBe(true)
       expect(result.test?.coverage?.provider).toBe('custom')
     })
@@ -357,6 +370,7 @@ describe('createMonocartConfig', () => {
     const result = createMonocartConfig(customOptions)
 
     expect(result.provider).toBe('custom')
+    // @ts-expect-error - customProviderModule exists on resolved config
     expect(result.customProviderModule).toBe('@oorabona/vitest-monocart-coverage')
     expect(result.enabled).toBe(true)
     expect(result.clean).toBe(true)

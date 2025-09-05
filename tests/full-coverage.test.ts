@@ -39,6 +39,7 @@ describe('Full module coverage', () => {
   })
 
   it('should handle takeCoverage', () => {
+    // @ts-expect-error - takeCoverage is available on custom provider
     const result = MonocartCoverageProviderModule.takeCoverage()
     expect(result).toEqual({})
   })
@@ -50,8 +51,11 @@ describe('Full module coverage', () => {
     })
 
     expect(config.provider).toBe('custom')
+    // @ts-expect-error - customProviderModule exists on resolved config
     expect(config.customProviderModule).toBe('@oorabona/vitest-monocart-coverage')
+    // @ts-expect-error - customOptions exists on resolved config
     expect(config.customOptions.outputDir).toBe('./test-coverage')
+    // @ts-expect-error - customOptions exists on resolved config
     expect(config.customOptions.reports).toContain('html')
   })
 })

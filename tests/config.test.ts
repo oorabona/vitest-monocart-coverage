@@ -27,7 +27,7 @@ describe('resolveMonocartConfig', () => {
     const customOptions = {
       name: 'Custom Override',
       outputDir: './custom-output',
-      reports: ['html'] as const,
+      reports: ['html' as string] as string[],
     }
 
     const config = await resolveMonocartConfig(customOptions)
@@ -104,6 +104,7 @@ describe('resolveMonocartConfig', () => {
     const config = await resolveMonocartConfig()
 
     expect(config.onEnd).toBeInstanceOf(Function)
+    // @ts-expect-error - Default onEnd function is always callable
     expect(() => config.onEnd()).not.toThrow()
   })
 
@@ -274,7 +275,7 @@ describe('resolveMonocartConfig', () => {
             // No reportsDirectory
           },
         },
-      } as Partial<Vitest>
+      } as unknown as Partial<Vitest>
 
       const config = await resolveMonocartConfig(undefined, mockVitestCtx as Vitest)
 
@@ -291,7 +292,7 @@ describe('resolveMonocartConfig', () => {
             // clean is undefined
           },
         },
-      } as Partial<Vitest>
+      } as unknown as Partial<Vitest>
 
       const config = await resolveMonocartConfig(undefined, mockVitestCtx as Vitest)
 
@@ -307,7 +308,7 @@ describe('resolveMonocartConfig', () => {
           },
           // No name property
         },
-      } as Partial<Vitest>
+      } as unknown as Partial<Vitest>
 
       const config = await resolveMonocartConfig(undefined, mockVitestCtx as Vitest)
 
@@ -323,7 +324,7 @@ describe('resolveMonocartConfig', () => {
             // No include property
           },
         },
-      } as Partial<Vitest>
+      } as unknown as Partial<Vitest>
 
       const config = await resolveMonocartConfig(undefined, mockVitestCtx as Vitest)
 
@@ -339,7 +340,7 @@ describe('resolveMonocartConfig', () => {
             // No exclude property
           },
         },
-      } as Partial<Vitest>
+      } as unknown as Partial<Vitest>
 
       const config = await resolveMonocartConfig(undefined, mockVitestCtx as Vitest)
 
@@ -355,7 +356,7 @@ describe('resolveMonocartConfig', () => {
             exclude: ['**/*.test.*'],
           },
         },
-      } as Partial<Vitest>
+      } as unknown as Partial<Vitest>
 
       const config = await resolveMonocartConfig(undefined, mockVitestCtx as Vitest)
 
@@ -369,7 +370,7 @@ describe('resolveMonocartConfig', () => {
             include: ['packages/*/src/**/*', 'lib/**/*'],
           },
         },
-      } as Partial<Vitest>
+      } as unknown as Partial<Vitest>
 
       const config = await resolveMonocartConfig(undefined, mockVitestCtx as Vitest)
 
@@ -383,7 +384,7 @@ describe('resolveMonocartConfig', () => {
             include: ['custom-src'],
           },
         },
-      } as Partial<Vitest>
+      } as unknown as Partial<Vitest>
 
       const config = await resolveMonocartConfig(undefined, mockVitestCtx as Vitest)
 
@@ -401,7 +402,7 @@ describe('resolveMonocartConfig', () => {
             exclude: ['**/*.test.*'],
           },
         },
-      } as Partial<Vitest>
+      } as unknown as Partial<Vitest>
 
       await resolveMonocartConfig(customOptions, mockVitestCtx as Vitest)
 
@@ -423,7 +424,7 @@ describe('resolveMonocartConfig', () => {
             exclude: ['**/*.test.*'],
           },
         },
-      } as Partial<Vitest>
+      } as unknown as Partial<Vitest>
 
       await resolveMonocartConfig(customOptions, mockVitestCtx as Vitest)
 
@@ -446,7 +447,7 @@ describe('resolveMonocartConfig', () => {
             // No include/exclude patterns to avoid sourceFilter creation and logging
           },
         },
-      } as Partial<Vitest>
+      } as unknown as Partial<Vitest>
 
       await resolveMonocartConfig(customOptions, mockVitestCtx as Vitest)
 
@@ -466,7 +467,7 @@ describe('resolveMonocartConfig', () => {
             // No include/exclude patterns to avoid sourceFilter creation and logging
           },
         },
-      } as Partial<Vitest>
+      } as unknown as Partial<Vitest>
 
       await resolveMonocartConfig(customOptions, mockVitestCtx as Vitest)
 
@@ -484,7 +485,7 @@ describe('resolveMonocartConfig', () => {
             reportsDirectory: './coverage-no-patterns',
           },
         },
-      } as Partial<Vitest>
+      } as unknown as Partial<Vitest>
 
       const config = await resolveMonocartConfig(undefined, mockVitestCtx as Vitest)
 
@@ -500,7 +501,7 @@ describe('resolveMonocartConfig', () => {
             exclude: ['**/*.test.*'],
           },
         },
-      } as Partial<Vitest>
+      } as unknown as Partial<Vitest>
 
       // Explicitly set logging to undefined to test fallback
       const customOptions = { logging: undefined as any }
@@ -516,7 +517,7 @@ describe('resolveMonocartConfig', () => {
         config: {
           coverage: {} as any, // Coverage object without include/exclude properties
         },
-      } as Partial<Vitest>
+      } as unknown as Partial<Vitest>
 
       const config = await resolveMonocartConfig(undefined, mockVitestCtx as Vitest)
 
@@ -531,7 +532,7 @@ describe('resolveMonocartConfig', () => {
             exclude: null as any,
           },
         },
-      } as Partial<Vitest>
+      } as unknown as Partial<Vitest>
 
       const config = await resolveMonocartConfig(undefined, mockVitestCtx as Vitest)
 
