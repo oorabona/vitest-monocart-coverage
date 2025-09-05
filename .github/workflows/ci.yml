@@ -44,15 +44,15 @@ jobs:
       - run: pnpm run typecheck
       # - run: pnpm run typecheck:tests
       - run: pnpm run test:coverage
-      - uses: codecov/codecov-action@v4
-        with:
-          files: ./coverage/coverage-final.json
-          fail_ci_if_error: true
       - run: pnpm run test:coverage:self
-      - uses: codecov/codecov-action@v4
-        with:
-          files: ./self-coverage/lcov.info
-          fail_ci_if_error: true
+      # - uses: codecov/codecov-action@v4
+      #   with:
+      #     files: ./coverage/coverage-final.json
+      #     fail_ci_if_error: true
+      # - uses: codecov/codecov-action@v4
+      #   with:
+      #     files: ./self-coverage/lcov.info
+      #     fail_ci_if_error: true
 
   build:
     if: github.event_name != 'workflow_dispatch'
