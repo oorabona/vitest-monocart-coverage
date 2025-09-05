@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    "types": ["vitest/globals", "node"],
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "sourceMap": true,
+    "inlineSources": true,
+    // "inlineSourceMap": true,
+    "removeComments": false,
+    "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@oorabona/vitest-monocart-coverage": ["src/index.ts"],
+      "@oorabona/vitest-monocart-coverage/*": ["src/*"]
+    }
+  },
+  "include": ["tests/**/*.ts", "examples/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

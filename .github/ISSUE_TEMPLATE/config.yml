@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and Support
+    url: https://github.com/oorabona/vitest-monocart-coverage/discussions
+    about: Please use GitHub Discussions for Q&A or general support.
+  - name: Report a Bug
+    url: https://github.com/oorabona/vitest-monocart-coverage/issues/new?assignees=&labels=bug&template=bug_report.md&title=
+    about: Found a bug? Please let us know.
+  - name: Request a Feature
+    url: https://github.com/oorabona/vitest-monocart-coverage/issues/new?assignees=&labels=enhancement&template=feature_request.md&title=
+    about: Have an idea for a new feature? We'd love to hear it!

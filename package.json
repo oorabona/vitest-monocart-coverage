@@ -1,0 +1,82 @@
+{
+  "name": "@oorabona/vitest-monocart-coverage",
+  "version": "1.0.0",
+  "description": "A Vitest custom coverage provider that integrates with Monocart coverage reporting",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:self": "pnpm build && vitest run --coverage --config vitest.self-coverage.config.ts",
+    "clean": "rm -rf dist coverage self-coverage test-coverage monocart-reports",
+    "lint": "biome lint .",
+    "lint:check": "biome check .",
+    "format": "biome format . --write",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "vitest",
+    "coverage",
+    "monocart",
+    "typescript",
+    "testing"
+  ],
+  "author": "Olivier Orabona <olivier.orabona@gmail.com>",
+  "license": "MIT",
+  "peerDependencies": {
+    "vitest": "^2.0.0"
+  },
+  "dependencies": {
+    "monocart-coverage-reports": "^2.12.6",
+    "picomatch": "^4.0.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.2",
+    "@types/istanbul-lib-coverage": "^2.0.6",
+    "@types/node": "^24.3.1",
+    "@types/picomatch": "^4.0.2",
+    "@vitest/coverage-v8": "^3.2.4",
+    "istanbul-lib-coverage": "^3.2.2",
+    "magicast": "^0.3.5",
+    "nano-staged": "^0.8.0",
+    "release-it": "^19.0.4",
+    "simple-git-hooks": "^2.11.1",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.4",
+    "vitest": "^3.2.4"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "nano-staged": {
+    "*.{ts,js,mts,cts}": [
+      "biome check --write --no-errors-on-unmatched"
+    ],
+    "*.json": [
+      "biome format --write"
+    ]
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm exec nano-staged"
+  },
+  "packageManager": "pnpm@10.15.0+sha512.486ebc259d3e999a4e8691ce03b5cac4a71cbeca39372a9b762cb500cfdf0873e2cb16abe3d951b1ee2cf012503f027b98b6584e4df22524e0c7450d9ec7aa7b",
+  "engines": {
+    "node": ">=20"
+  }
+}
