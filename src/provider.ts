@@ -107,9 +107,10 @@ export class MonocartCoverageProvider
       const viteNode =
         (this.ctx as any).projects?.find((project: any) => project.name === projectName)
           ?.vitenode || (this.ctx as any).vitenode
-      const fetchCache = transformMode
-        ? viteNode?.fetchCaches?.[transformMode]
-        : viteNode?.fetchCache
+      const fetchCache =
+        transformMode && viteNode?.fetchCaches
+          ? viteNode.fetchCaches[transformMode]
+          : viteNode?.fetchCache
       const transformResults = this.normalizeTransformResults(fetchCache)
 
       // Enrich each V8 entry with source and source map data
