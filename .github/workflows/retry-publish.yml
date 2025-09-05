@@ -103,22 +103,36 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      # Retry publish with conditional steps
+      # Manual retry publish (bypassing release-it issues)
       - name: Retry publish
         run: |
-          ARGS="--ci"
+          VERSION=$(node -p "require('./package.json').version")
+          echo "📋 Publishing version: $VERSION"
           
-          if [ "${{ github.event.inputs.npm_only }}" = "true" ]; then
-            ARGS="$ARGS --no-github"
-            echo "📦 Publishing to npm only"
-          elif [ "${{ github.event.inputs.github_only }}" = "true" ]; then
-            ARGS="$ARGS --no-npm"
-            echo "🐙 Publishing to GitHub only"
-          else
-            echo "📦🐙 Publishing to npm and GitHub"
+          # Publish to npm if not disabled
+          if [ "${{ github.event.inputs.github_only }}" != "true" ]; then
+            echo "📦 Publishing to npm..."
+            npm publish --provenance --access public
+            echo "✅ Successfully published to npm"
           fi
           
-          pnpm release-it --config .release-it.retry-publish.json $ARGS
+          # Create/update GitHub Release if not disabled
+          if [ "${{ github.event.inputs.npm_only }}" != "true" ]; then
+            echo "🐙 Creating GitHub Release..."
+            
+            # Extract changelog for this version
+            CHANGELOG=$(pnpm tsx scripts/extract-changelog.ts $VERSION || echo "Release v$VERSION")
+            
+            # Create or update release
+            gh release create "v$VERSION" \
+              --title "v$VERSION" \
+              --notes "$CHANGELOG" \
+              --target "${{ steps.tag.outputs.target_tag }}" \
+              || gh release edit "v$VERSION" \
+                --notes "$CHANGELOG"
+            
+            echo "✅ Successfully created/updated GitHub Release"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
