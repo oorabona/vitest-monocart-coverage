@@ -1,0 +1,126 @@
+name: Retry Publish
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Git tag to republish (e.g., v1.0.0). If empty, uses latest tag.'
+        type: string
+        required: false
+      npm_only:
+        description: 'Only republish to npm (skip GitHub Release)'
+        type: boolean
+        default: false
+      github_only:
+        description: 'Only republish GitHub Release (skip npm)'
+        type: boolean
+        default: false
+
+jobs:
+  retry-publish:
+    runs-on: ubuntu-latest
+    name: Retry Publish
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          registry-url: https://registry.npmjs.org/
+
+      - run: pnpm install --frozen-lockfile
+
+      # Pre-flight checks
+      - name: Run pre-flight checks
+        run: pnpm tsx scripts/retry-publish.ts
+
+      # Get target tag (user input or latest)
+      - name: Determine target tag
+        id: tag
+        run: |
+          if [ -n "${{ github.event.inputs.tag_name }}" ]; then
+            TAG="${{ github.event.inputs.tag_name }}"
+          else
+            TAG=$(git describe --tags --abbrev=0)
+          fi
+          echo "target_tag=$TAG" >> $GITHUB_OUTPUT
+          echo "ℹ️  Target tag: $TAG"
+
+      # Verify tag exists
+      - name: Verify tag exists
+        run: |
+          if ! git rev-parse "${{ steps.tag.outputs.target_tag }}" >/dev/null 2>&1; then
+            echo "❌ Tag ${{ steps.tag.outputs.target_tag }} does not exist"
+            exit 1
+          fi
+          echo "✅ Tag ${{ steps.tag.outputs.target_tag }} verified"
+
+      # Checkout the exact tag commit
+      - name: Checkout tag
+        run: |
+          echo "🔄 Checking out tag ${{ steps.tag.outputs.target_tag }}"
+          git checkout "${{ steps.tag.outputs.target_tag }}"
+
+      # Download pre-built artifact for this commit
+      - name: Download dist artifact  
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: ci.yml
+          commit: ${{ steps.tag.outputs.target_tag }}
+          name: dist-${{ steps.tag.outputs.target_tag }}
+          path: ./dist
+          workflow_conclusion: success
+          if_no_artifact_found: warn
+
+      # Fallback: build if no artifact found
+      - name: Build if no artifact
+        run: |
+          if [ ! -f "./dist/index.js" ]; then
+            echo "⚠️  No pre-built artifact found, building from source..."
+            pnpm run build
+          else
+            echo "✅ Using pre-built artifact"
+          fi
+
+      # Configure Git
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # Retry publish with conditional steps
+      - name: Retry publish
+        run: |
+          ARGS="--ci"
+          
+          if [ "${{ github.event.inputs.npm_only }}" = "true" ]; then
+            ARGS="$ARGS --no-github"
+            echo "📦 Publishing to npm only"
+          elif [ "${{ github.event.inputs.github_only }}" = "true" ]; then
+            ARGS="$ARGS --no-npm"
+            echo "🐙 Publishing to GitHub only"
+          else
+            echo "📦🐙 Publishing to npm and GitHub"
+          fi
+          
+          pnpm release-it --config .release-it.retry-publish.json $ARGS
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Return to main branch
+      - name: Return to main branch
+        if: always()
+        run: |
+          echo "🔄 Returning to main branch"
+          git checkout main || git checkout -

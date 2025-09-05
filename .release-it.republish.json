@@ -1,0 +1,31 @@
+{
+  "increment": false,
+  "git": {
+    "changelog": false,
+    "commit": false,
+    "tag": true,
+    "tagName": "v${version}",
+    "push": true,
+    "requireCleanWorkingDir": false,
+    "tagAnnotation": "⚠️  REPUBLISHED: Tag moved to include urgent fixes for v${version}"
+  },
+  "npm": {
+    "publish": true,
+    "skipChecks": true,
+    "publishArgs": ["--provenance", "--access", "public"]
+  },
+  "github": {
+    "release": true,
+    "update": true,
+    "releaseNotes": "pnpm tsx scripts/extract-changelog.ts ${version}"
+  },
+  "hooks": {
+    "before:init": [
+      "echo '⚠️  WARNING: This will MOVE the existing tag v${version} to the current commit!'",
+      "echo '⚠️  This breaks semver immutability and should only be used in exceptional cases!'",
+      "pnpm tsx scripts/populate-unreleased.ts",
+      "pnpm tsx scripts/republish-changelog.ts"
+    ],
+    "after:release": "echo '⚠️  IMPORTANT: Tag v${version} has been moved. Users may need to re-fetch tags.'"
+  }
+}

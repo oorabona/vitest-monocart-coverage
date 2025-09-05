@@ -1,0 +1,169 @@
+name: Hotfix Release
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      increment:
+        description: 'Semver increment for hotfix'
+        type: choice
+        default: patch
+        options: [patch, minor]
+      commit_sha:
+        description: 'Commit SHA for hotfix (defaults to HEAD of main)'
+        type: string
+        required: false
+      dry_run:
+        description: 'Dry run (no actual publish)'
+        type: boolean
+        default: false
+
+concurrency:
+  group: hotfix-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # Validation job (reuse from existing workflow)
+  validate:
+    runs-on: ubuntu-latest
+    name: Validate Hotfix
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.commit_sha || 'main' }}
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run check
+      - run: pnpm run typecheck
+      - run: pnpm run typecheck:tests
+      - run: pnpm run test:coverage
+
+  # Build job (reuse from existing workflow)
+  build:
+    runs-on: ubuntu-latest
+    name: Build Hotfix
+    needs: [validate]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.commit_sha || 'main' }}
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hotfix-dist-${{ github.sha }}
+          path: ./dist
+          retention-days: 7
+
+  # Hotfix release job
+  hotfix:
+    runs-on: ubuntu-latest
+    name: Hotfix Release
+    needs: [validate, build]
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.commit_sha || 'main' }}
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          registry-url: https://registry.npmjs.org/
+
+      - run: pnpm install --frozen-lockfile
+
+      # Download build artifact
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: hotfix-dist-${{ github.sha }}
+          path: ./dist
+
+      # Verify artifact
+      - name: Verify dist artifact
+        run: |
+          if [ ! -f "./dist/index.js" ]; then
+            echo "❌ dist/index.js not found in artifact."
+            exit 1
+          fi
+          echo "✅ dist artifact is valid."
+
+      # Configure Git
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # Pre-release info
+      - name: Show hotfix info
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "none")
+          
+          echo "🚨 HOTFIX RELEASE INFORMATION"
+          echo "📋 Current version: $CURRENT_VERSION"
+          echo "🏷️  Latest tag: $LATEST_TAG"
+          echo "⬆️  Increment: ${{ github.event.inputs.increment }}"
+          echo "📝 Commit: ${{ github.event.inputs.commit_sha || github.sha }}"
+          echo "🧪 Dry run: ${{ github.event.inputs.dry_run }}"
+          
+          # Show commits since last tag
+          if [ "$LATEST_TAG" != "none" ]; then
+            echo ""
+            echo "📋 Commits since $LATEST_TAG:"
+            git log --oneline --pretty=format:"- %s" $LATEST_TAG..HEAD | head -10
+          fi
+
+      # Run hotfix release
+      - name: Run hotfix release
+        run: |
+          ARGS="--ci --increment ${{ github.event.inputs.increment }}"
+          
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+            echo "🧪 Running in DRY RUN mode"
+          else
+            echo "🚀 Running LIVE hotfix release"
+          fi
+          
+          pnpm release-it --config .release-it.hotfix.json $ARGS
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Post-release summary
+      - name: Release summary
+        if: always()
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" != "true" ]; then
+            NEW_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "unknown")
+            echo "✅ Hotfix release completed!"
+            echo "🏷️  New version: v$NEW_VERSION"
+            echo "📦 Published to npm"
+            echo "🐙 GitHub Release created"
+          else
+            echo "🧪 Dry run completed - no actual release was made"
+          fi

@@ -1,4 +1,8 @@
 name: CI & Release
+# Main CI workflow for validation, build, and standard releases
+# For other release types, see:
+# - retry-publish.yml: Republish existing versions to npm/GitHub
+# - hotfix.yml: Create urgent patch releases
 permissions:
   contents: read
 
@@ -42,7 +46,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm run check
       - run: pnpm run typecheck
-      # - run: pnpm run typecheck:tests
+      - run: pnpm run typecheck:tests
       - run: pnpm run test:coverage
       - run: pnpm run test:coverage:self
       # - uses: codecov/codecov-action@v4

@@ -1,0 +1,203 @@
+name: ⚠️ Republish (Exceptional)
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to republish (e.g., 1.0.0 without v prefix)'
+        type: string
+        required: true
+      force_confirm:
+        description: 'Type "I UNDERSTAND THE RISKS" to confirm tag movement'
+        type: string
+        required: true
+      reason:
+        description: 'Reason for exceptional republish (for audit trail)'
+        type: string
+        required: true
+
+concurrency:
+  group: republish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # Safety checks and confirmation
+  pre-flight:
+    runs-on: ubuntu-latest
+    name: Pre-flight Safety Checks
+    outputs:
+      confirmed: ${{ steps.confirm.outputs.confirmed }}
+      version: ${{ steps.validate.outputs.version }}
+    steps:
+      - name: Validate confirmation
+        id: confirm
+        run: |
+          if [ "${{ github.event.inputs.force_confirm }}" != "I UNDERSTAND THE RISKS" ]; then
+            echo "❌ Confirmation phrase incorrect. Expected: 'I UNDERSTAND THE RISKS'"
+            exit 1
+          fi
+          echo "confirmed=true" >> $GITHUB_OUTPUT
+          echo "✅ Risk acknowledgment confirmed"
+
+      - name: Validate version format
+        id: validate
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
+            echo "❌ Invalid version format: $VERSION"
+            echo "Expected format: x.y.z or x.y.z-prerelease"
+            exit 1
+          fi
+          echo "version=v$VERSION" >> $GITHUB_OUTPUT
+          echo "✅ Version format validated: v$VERSION"
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if tag exists
+        run: |
+          TAG="v${{ github.event.inputs.version }}"
+          if ! git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "❌ Tag $TAG does not exist"
+            exit 1
+          fi
+          CURRENT_COMMIT=$(git rev-parse "$TAG")
+          HEAD_COMMIT=$(git rev-parse HEAD)
+          
+          echo "🏷️  Tag $TAG exists at commit: ${CURRENT_COMMIT:0:8}"
+          echo "📍 HEAD is at commit: ${HEAD_COMMIT:0:8}"
+          
+          if [ "$CURRENT_COMMIT" = "$HEAD_COMMIT" ]; then
+            echo "⚠️  Tag already points to HEAD - no movement needed"
+          else
+            echo "⚠️  Tag will be moved from ${CURRENT_COMMIT:0:8} to ${HEAD_COMMIT:0:8}"
+          fi
+
+      - name: Show impact warning
+        run: |
+          echo "⚠️ =========================================="
+          echo "⚠️  DANGER: EXCEPTIONAL REPUBLISH OPERATION"
+          echo "⚠️ =========================================="
+          echo "⚠️  This will:"
+          echo "⚠️  • MOVE tag v${{ github.event.inputs.version }} to current HEAD"
+          echo "⚠️  • BREAK semantic versioning immutability" 
+          echo "⚠️  • Require users to re-fetch tags"
+          echo "⚠️  • Potentially cause version inconsistencies"
+          echo "⚠️ "
+          echo "⚠️  Reason: ${{ github.event.inputs.reason }}"
+          echo "⚠️  Authorized by: ${{ github.actor }}"
+          echo "⚠️ =========================================="
+
+  # Standard validation (reuse existing)
+  validate:
+    runs-on: ubuntu-latest
+    name: Validate Code
+    needs: [pre-flight]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run check
+      - run: pnpm run typecheck
+      - run: pnpm run typecheck:tests
+      - run: pnpm run test:coverage
+
+  # Build
+  build:
+    runs-on: ubuntu-latest
+    name: Build for Republish
+    needs: [validate]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: republish-dist-${{ github.sha }}
+          path: ./dist
+          retention-days: 7
+
+  # Exceptional republish
+  republish:
+    runs-on: ubuntu-latest
+    name: ⚠️ Execute Republish
+    needs: [pre-flight, validate, build]
+    if: needs.pre-flight.outputs.confirmed == 'true'
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          registry-url: https://registry.npmjs.org/
+
+      - run: pnpm install --frozen-lockfile
+
+      # Download build artifact
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: republish-dist-${{ github.sha }}
+          path: ./dist
+
+      # Configure Git
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # Final warning before execution
+      - name: Final confirmation
+        run: |
+          echo "🚨 FINAL WARNING: Starting exceptional republish in 10 seconds..."
+          echo "🚨 Reason: ${{ github.event.inputs.reason }}"
+          echo "🚨 This will move tag ${{ needs.pre-flight.outputs.version }} to current commit"
+          sleep 10
+
+      # Execute republish
+      - name: Execute republish
+        run: |
+          echo "⚠️  Executing exceptional republish for v${{ github.event.inputs.version }}"
+          pnpm release-it --config .release-it.republish.json --ci
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Audit trail
+      - name: Create audit trail
+        if: always()
+        run: |
+          echo "📋 AUDIT TRAIL" >> audit-trail.md
+          echo "==============" >> audit-trail.md
+          echo "Date: $(date -u)" >> audit-trail.md
+          echo "Actor: ${{ github.actor }}" >> audit-trail.md
+          echo "Workflow: ${{ github.workflow }}" >> audit-trail.md
+          echo "Run ID: ${{ github.run_id }}" >> audit-trail.md
+          echo "Version: v${{ github.event.inputs.version }}" >> audit-trail.md
+          echo "Reason: ${{ github.event.inputs.reason }}" >> audit-trail.md
+          echo "Commit: ${{ github.sha }}" >> audit-trail.md
+          echo "" >> audit-trail.md
+          echo "This operation moved an existing Git tag, breaking semver immutability." >> audit-trail.md
+          
+          cat audit-trail.md

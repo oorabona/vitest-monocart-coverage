@@ -1,0 +1,27 @@
+{
+  "increment": "patch",
+  "git": {
+    "changelog": "git log --pretty=format:'- %s' ${latestTag}..HEAD",
+    "commitMessage": "hotfix: bump v${version}",
+    "tagName": "v${version}",
+    "requireBranch": "main",
+    "requireUpstream": false,
+    "requireCleanWorkingDir": false
+  },
+  "hooks": {
+    "before:bump": [
+      "echo '🚨 Creating hotfix release v${version}'",
+      "pnpm tsx scripts/populate-unreleased.ts",
+      "pnpm tsx scripts/update-changelog.ts ${version}"
+    ]
+  },
+  "github": {
+    "release": true,
+    "releaseNotes": "pnpm tsx scripts/extract-changelog.ts ${version}"
+  },
+  "npm": {
+    "skipChecks": true,
+    "publish": true,
+    "publishArgs": ["--provenance", "--access", "public"]
+  }
+}
