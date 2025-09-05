@@ -207,7 +207,7 @@ function findConfigLoader(configFile: string): ConfigLoader {
       return loader
     }
   }
-  /* v8 ignore next - Edge case where no loader is found */
+  /* v8 ignore next 4 - Edge case where no loader is found */
   return (_: string) => {
     throw new Error(`No loader found for config file: ${configFile}`)
   }
