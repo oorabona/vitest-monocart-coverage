@@ -65,12 +65,16 @@ jobs:
           fi
           echo "✅ Tag ${{ steps.tag.outputs.target_tag }} verified"
 
-      # Checkout the exact tag commit
-      - name: Checkout tag
+      # Checkout the exact tag commit and create branch to avoid detached HEAD
+      - name: Checkout tag and create branch
         run: |
           echo "🔄 Checking out tag ${{ steps.tag.outputs.target_tag }}"
           git checkout "${{ steps.tag.outputs.target_tag }}"
-          echo "✅ Checked out tag ${{ steps.tag.outputs.target_tag }}"
+          
+          # Create temporary branch to avoid "ref HEAD is not a symbolic ref" error
+          TEMP_BRANCH="retry-publish-${{ github.run_id }}"
+          git checkout -b "$TEMP_BRANCH"
+          echo "✅ Created temporary branch $TEMP_BRANCH from tag ${{ steps.tag.outputs.target_tag }}"
 
       # Download pre-built artifact for this commit
       - name: Download dist artifact  
@@ -119,10 +123,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # Return to main branch
-      - name: Return to main branch
+      # Clean up temporary branch
+      - name: Clean up temporary branch
         if: always()
         run: |
-          echo "🔄 Returning to main branch"
+          TEMP_BRANCH="retry-publish-${{ github.run_id }}"
+          echo "🔄 Returning to main branch and cleaning up"
           git checkout main 2>/dev/null || git checkout - 2>/dev/null || true
-          echo "✅ Returned to main branch"
+          git branch -D "$TEMP_BRANCH" 2>/dev/null || true
+          echo "✅ Cleaned up temporary branch $TEMP_BRANCH"
