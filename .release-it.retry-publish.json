@@ -1,13 +1,6 @@
 {
   "increment": false,
-  "git": {
-    "changelog": false,
-    "commit": false,
-    "tag": false,
-    "push": false,
-    "requireCleanWorkingDir": false,
-    "requireBranch": false
-  },
+  "git": false,
   "npm": {
     "publish": true,
     "skipChecks": true,

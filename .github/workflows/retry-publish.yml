@@ -65,13 +65,12 @@ jobs:
           fi
           echo "✅ Tag ${{ steps.tag.outputs.target_tag }} verified"
 
-      # Checkout the exact tag commit and create a temporary branch
+      # Checkout the exact tag commit
       - name: Checkout tag
         run: |
           echo "🔄 Checking out tag ${{ steps.tag.outputs.target_tag }}"
           git checkout "${{ steps.tag.outputs.target_tag }}"
-          git checkout -b "temp-retry-publish-${{ github.run_id }}"
-          echo "✅ Created temporary branch for retry publish"
+          echo "✅ Checked out tag ${{ steps.tag.outputs.target_tag }}"
 
       # Download pre-built artifact for this commit
       - name: Download dist artifact  
@@ -120,11 +119,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # Clean up temporary branch and return to main
+      # Return to main branch
       - name: Return to main branch
         if: always()
         run: |
           echo "🔄 Returning to main branch"
-          git checkout main || git checkout -
-          git branch -D "temp-retry-publish-${{ github.run_id }}" 2>/dev/null || true
-          echo "✅ Cleaned up temporary branch"
+          git checkout main 2>/dev/null || git checkout - 2>/dev/null || true
+          echo "✅ Returned to main branch"
