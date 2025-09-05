@@ -1,4 +1,4 @@
 {
-  "*.{ts,tsx,js,jsx}": ["pnpm run format", "pnpm run lint:check"],
-  "*.{json,md,yml,yaml}": ["pnpm run format"]
+  "*.{ts,tsx,js,jsx}": ["pnpm run check:fix"],
+  "*.{json,md,yml,yaml}": ["pnpm run check:fix"]
 }
