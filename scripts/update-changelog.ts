@@ -3,9 +3,23 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { getRepoUrl } from "./utils/get-repo.js";
 
-const version = process.argv[2];
+let version = process.argv[2];
 if (!version) {
-  console.error("Usage: pnpm tsx scripts/update-changelog.ts <version>");
+  console.warn("Usage: pnpm tsx scripts/update-changelog.ts [version]");
+  console.warn("You did not specify a version, we will try to read it from package.json");
+  try {
+    const pkg = await import(join(process.cwd(), "package.json"), { with: { type: "json" } });
+    version = pkg.version;
+  } catch (err) {
+    console.error("❌ Failed to read version from package.json:", err);
+    process.exit(1);
+  }
+}
+
+if (version) {
+  console.log(`ℹ️  Using version: ${version}`);
+} else {
+  console.error("❌ No version specified and failed to read from package.json");
   process.exit(1);
 }
 
