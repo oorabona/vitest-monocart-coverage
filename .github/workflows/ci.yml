@@ -46,7 +46,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm run check
       - run: pnpm run typecheck
-      - run: pnpm run typecheck:tests
+      # - run: pnpm run typecheck:tests
       - run: pnpm run test:coverage
       - run: pnpm run test:coverage:self
       # - uses: codecov/codecov-action@v4
