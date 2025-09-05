@@ -2,7 +2,8 @@
   "increment": false,
   "git": {
     "changelog": false,
-    "commit": false,
+    "commit": true,
+    "commitMessage": "chore: update CHANGELOG.md for republished v${version}",
     "tag": true,
     "tagName": "v${version}",
     "push": true,
