@@ -1,6 +1,13 @@
 {
   "increment": false,
-  "git": false,
+  "git": {
+    "changelog": false,
+    "commit": false,
+    "tag": false,
+    "push": false,
+    "requireCleanWorkingDir": false,
+    "requireBranch": false
+  },
   "npm": {
     "publish": true,
     "skipChecks": true,
@@ -10,16 +17,5 @@
     "release": true,
     "update": true,
     "releaseNotes": "pnpm tsx scripts/extract-changelog.ts ${version}"
-  },
-  "hooks": {
-    "before:init": [
-      "echo 'ℹ️  Checking out tag ${latestTag} to ensure code consistency'",
-      "git checkout ${latestTag}"
-    ],
-    "after:release": [
-      "echo 'ℹ️  Returning to previous branch'",
-      "git checkout -",
-      "echo '✅ Successfully republished ${name} v${version} to npm and GitHub (retry mode)'"
-    ]
   }
 }

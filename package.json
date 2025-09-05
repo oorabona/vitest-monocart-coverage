@@ -29,6 +29,9 @@
     "clean": "rimraf dist",
     "prepare": "simple-git-hooks",
     "release": "pnpm release-it",
+    "retry-publish": "pnpm tsx scripts/retry-publish.ts && pnpm release-it --config .release-it.retry-publish.json",
+    "hotfix": "pnpm release-it --config .release-it.hotfix.json",
+    "republish": "pnpm release-it --config .release-it.republish.json",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "typecheck": "tsc --noEmit"
   },
