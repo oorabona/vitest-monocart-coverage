@@ -21,12 +21,14 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsup --sourcemap false",
+    "build:dev": "tsup --sourcemap true",
+    "dev": "tsup --watch --sourcemap true",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:coverage:self": "pnpm build && vitest run --coverage --config vitest.self-coverage.config.ts",
+    "test:coverage:self": "pnpm build:dev && vitest run --coverage --config vitest.self-coverage.config.ts",
+    "test:coverage:self:prod": "pnpm build && vitest run --coverage --config vitest.self-coverage.config.ts",
     "test:ui": "vitest --ui",
     "check:fix": "biome check --write .",
     "check": "biome check .",
