@@ -5,7 +5,7 @@ export default defineConfig({
   format: ['cjs', 'esm'],
   dts: true,
   splitting: false,
-  sourcemap: true, // Overridden by CLI args in package.json scripts
+  sourcemap: process.env.NODE_ENV === 'development', // Dev-only sourcemaps
   clean: true,
   treeshake: true,
   minify: false,

@@ -18,12 +18,15 @@
     }
   },
   "files": [
-    "dist"
+    "dist/**/*.js",
+    "dist/**/*.cjs",
+    "dist/**/*.d.ts",
+    "dist/**/*.d.cts"
   ],
   "scripts": {
-    "build": "tsup --sourcemap false",
-    "build:dev": "tsup --sourcemap true",
-    "dev": "tsup --watch --sourcemap true",
+    "build": "tsup",
+    "build:dev": "NODE_ENV=development tsup",
+    "dev": "NODE_ENV=development tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -34,10 +37,12 @@
     "check": "biome check .",
     "clean": "rimraf dist",
     "prepare": "simple-git-hooks",
-    "release": "pnpm release-it",
+    "release": "pnpm release-it --config .release-it.no-changelog.json",
+    "release:auto": "pnpm release-it",
     "retry-publish": "pnpm tsx scripts/retry-publish.ts && pnpm release-it --config .release-it.retry-publish.json",
     "hotfix": "pnpm release-it --config .release-it.hotfix.json",
     "republish": "pnpm release-it --config .release-it.republish.json",
+    "changelog:prepare": "pnpm release-it --config .release-it.changelog-only.json --ci",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "typecheck": "tsc --noEmit"
   },
