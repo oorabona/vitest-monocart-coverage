@@ -39,6 +39,10 @@ function normalizeGitUrl(url: string): string {
     // e.g. git@gitlab.com:org/repo.git
     return url.replace(/^git@/, "https://").replace(":", "/").replace(/\.git$/, "");
   }
+  if (url.startsWith("git+https://")) {
+    // Remove git+ prefix and .git suffix
+    return url.replace(/^git\+/, "").replace(/\.git$/, "");
+  }
   if (url.startsWith("http")) {
     return url.replace(/\.git$/, "");
   }
