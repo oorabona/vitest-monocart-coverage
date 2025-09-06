@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [v1.2.0] - 2025-09-06
+
 ### Added
 - enhance changelog population logic to merge manual and git-generated sections ([3cb4984](https://github.com/oorabona/vitest-monocart-coverage/commit/3cb49841a6c453a12bbe48fa956378a0088e5096))
 - enhance changelog population logic and improve commit parsing with SHA links ([924620e](https://github.com/oorabona/vitest-monocart-coverage/commit/924620e0f5f1e6539352c683d711a717519467be))
@@ -17,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - update package.json scripts for improved build configurations and refine tsup sourcemap handling ([cbbd93e](https://github.com/oorabona/vitest-monocart-coverage/commit/cbbd93ea145f5996f5e45b8ec5207662f430b6ca))
 - align version handling in MonocartCoverageProvider with Vitest to prevent mixed version warnings ([43cee8e](git+https://github.com/oorabona/vitest-monocart-coverage.git/commit/43cee8e48f07e90e273e402360c36c6217fb4483))
 - disable git commit in changelog-only configuration ([38119cb](git+https://github.com/oorabona/vitest-monocart-coverage.git/commit/38119cb213d1b13ca127c6d8157f1d3c03db9230))
+- update release-it configuration to enable changelog updates during release process ([1c325c2](https://github.com/oorabona/vitest-monocart-coverage/commit/1c325c266475b783f268c0634bf9d43f395b8051))
+- update CHANGELOG.md with recent additions, fixes, and changes for improved documentation ([0f1c08e](https://github.com/oorabona/vitest-monocart-coverage/commit/0f1c08efd0ca5af58e3465afc6f9a6e356ebf129))
 
 ### Changed
 - enhance README with additional badges and documentation links ([f992b05](https://github.com/oorabona/vitest-monocart-coverage/commit/f992b05cbbe97147c1e16c058df70d9c0b986721))
