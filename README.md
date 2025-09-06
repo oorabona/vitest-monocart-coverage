@@ -1,5 +1,12 @@
 # @oorabana/vitest-monocart-coverage
 
+[![npm version](https://badge.fury.io/js/@oorabona%2Fvitest-monocart-coverage.svg)](https://badge.fury.io/js/@oorabona%2Fvitest-monocart-coverage)
+[![CI](https://github.com/oorabona/vitest-monocart-coverage/actions/workflows/ci.yml/badge.svg)](https://github.com/oorabona/vitest-monocart-coverage/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/oorabona/vitest-monocart-coverage/branch/main/graph/badge.svg)](https://codecov.io/gh/oorabona/vitest-monocart-coverage)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/)
+[![Vitest](https://img.shields.io/badge/tested%20with-Vitest-6E9F18.svg)](https://vitest.dev/)
+
 A Vitest custom coverage provider that integrates Vitest's V8 coverage engine with [Monocart coverage reporting](https://github.com/cenfun/monocart-coverage-reports) for enhanced visualization and features.
 
 ## Features
@@ -13,6 +20,15 @@ A Vitest custom coverage provider that integrates Vitest's V8 coverage engine wi
 - ✅ **Configuration Validation**: Runtime validation of config files with clear error messages
 - 🔄 **Multiple Config Formats**: Supports `.ts`, `.js`, `.mjs`, `.cjs`, and `.json` config files
 - 🎨 **Auto-Discovery**: Automatically inherits Vitest's include/exclude patterns
+
+## Why Choose Monocart over V8 Default?
+
+Vitest's default V8 provider has coverage accuracy issues with exception handling and complex code paths. See our [detailed coverage comparison](./docs/coverage-comparison.md) that shows:
+
+- **V8 Default**: 97.56% branch coverage (false negatives in exception paths)
+- **Monocart**: 100% branch coverage (accurate real-world coverage)
+
+Read the full analysis: **[Coverage Provider Comparison](./docs/coverage-comparison.md)**
 
 ## Installation
 
@@ -194,6 +210,11 @@ The provider automatically inherits settings from your Vitest configuration:
 - **Clean Cache**: Inherits from Vitest's `coverage.clean` setting
 
 This ensures seamless integration with your existing Vitest setup while providing enhanced reporting capabilities.
+
+## Documentation
+
+- **[Coverage Provider Comparison](./docs/coverage-comparison.md)** - Detailed analysis of Monocart vs V8 default provider
+- **[Release & CI Workflows](./docs/release-workflows.md)** - Complete guide to release processes and GitHub Actions
 
 ## Acknowledgments
 
