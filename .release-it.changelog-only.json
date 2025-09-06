@@ -2,7 +2,7 @@
   "increment": false,
   "git": {
     "changelog": false,
-    "commit": true,
+    "commit": false,
     "commitMessage": "docs: update changelog for next release",
     "tag": false,
     "push": false,
