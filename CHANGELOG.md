@@ -6,6 +6,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Standard npm badges (version, CI, codecov, license, TypeScript, Vitest) to README.md
+- Comprehensive coverage comparison documentation explaining Monocart vs V8 default provider differences
+- Mermaid diagrams for workflow visualization
+- enhance changelog population logic to merge manual and git-generated sections
+- enhance retry publish workflow with temporary branch management and update release-it configuration
+- add workflows for hotfix, republish, and retry publish with associated scripts
+- add script to auto-populate [Unreleased] section in CHANGELOG.md
+
+### Fixed
+- Test coverage extraction issues in exception handling paths (lines 189, 209 in config.ts)
+- Transform cache access logic for different transformMode values and vitenode fallback scenarios
+- update package.json scripts for improved build configurations and refine tsup sourcemap handling
+- update type assertions in tests for better compatibility with Vitest
+- update comment to specify the ignore next line for v8 in findConfigLoader function
+- improve fetchCache assignment logic for better handling of transform modes
+- enable commit in republish workflow to update CHANGELOG.md
+- because of release-it#834 issue, had to rework the republish to directly call npm instead
+
+### Changed
+- Optimized build system with conditional source maps (dev-only vs production)
+- Package size reduced from ~6MB to 362KB (94% reduction) by excluding source maps from npm distribution
+- Improved tsup configuration with NODE_ENV-based sourcemap generation
+- Updated package.json files array to exclude .map files from npm package
+- enhance README with additional badges and documentation links
+- add coverage provider comparison between Monocart and V8 default
+- update build scripts for improved sourcemap handling and add production coverage test
+- update CHANGELOG.md with enhancements and fixes for v1.0.0 release
+- comment out typecheck:tests step in republish workflow
+- simplify retry publish workflow by removing temporary branch management
+- comment out typecheck:tests step in CI workflow
+- add initial changelog file following semantic versioning
+- enhance version handling in update-changelog script
+- add tsx as a dependency and update package manager version
+- comment out Codecov actions in CI workflow
+- update CI workflow and scripts for improved coverage reporting
 
 ## [v1.0.0] - 2025-09-05
 
