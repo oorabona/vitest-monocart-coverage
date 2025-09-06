@@ -6,7 +6,7 @@ import { createLogger } from './logger.js'
 import type { RequiredMonocartCoverageOptions, ScriptCoverageWithOffset } from './types.js'
 
 export class MonocartReporter {
-  private config: RequiredMonocartCoverageOptions
+  public readonly config: RequiredMonocartCoverageOptions
   private logger: Logger
   private mcr: CoverageReport | null = null
   private coverageDataCollection: any[] = []
@@ -42,6 +42,7 @@ export class MonocartReporter {
         sourcePath: this.config.sourcePath,
         sourceFilter: this.config.sourceFilter,
         logging: this.config.logging,
+        css: this.config.css,
         onEnd: this.config.onEnd,
       }
 

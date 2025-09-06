@@ -14,7 +14,7 @@ const createFullConfig = (
   sourceFilter: () => true,
   cleanCache: true,
   logging: 'info',
-  css: true,
+  css: false,
   onEnd: () => {},
   ...overrides,
 })
@@ -161,6 +161,7 @@ describe('MonocartReporter', () => {
       sourceFilter: expect.any(Function),
       cleanCache: true,
       logging: 'info',
+      css: false,
       onEnd: expect.any(Function),
     })
 
