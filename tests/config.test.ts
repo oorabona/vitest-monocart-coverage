@@ -17,7 +17,7 @@ describe('resolveMonocartConfig', () => {
       sourcePath: 'src',
       cleanCache: true,
       logging: 'info',
-      css: true,
+      css: false,
       onEnd: expect.any(Function),
       sourceFilter: expect.any(Function),
     })
@@ -912,5 +912,68 @@ describe('createSourceFilter', () => {
       rmSync(testDir, { recursive: true })
       consoleSpy.mockRestore()
     }
+  })
+
+  describe('CSS option validation', () => {
+    it('should warn and disable CSS option in Node.js environment', async () => {
+      const loggerSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const config = await resolveMonocartConfig({
+        css: true,
+        logging: 'warn',
+      })
+
+      expect(loggerSpy).toHaveBeenCalledWith(
+        expect.stringContaining('CSS coverage is only available in browser mode'),
+      )
+      expect(config.css).toBe(false) // Should be disabled in Node.js
+
+      loggerSpy.mockRestore()
+    })
+
+    it('should not warn when CSS option is false', async () => {
+      const loggerSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const config = await resolveMonocartConfig({
+        css: false,
+        logging: 'warn',
+      })
+
+      expect(loggerSpy).not.toHaveBeenCalled()
+      expect(config.css).toBe(false)
+
+      loggerSpy.mockRestore()
+    })
+
+    it('should not warn when CSS option is undefined', async () => {
+      const loggerSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const config = await resolveMonocartConfig({
+        logging: 'warn',
+      })
+
+      expect(loggerSpy).not.toHaveBeenCalled()
+      // Default CSS should be false from DEFAULT_CONFIG
+      expect(config.css).toBe(false)
+
+      loggerSpy.mockRestore()
+    })
+
+    it('should warn about CSS usage with clear guidance message', async () => {
+      const loggerSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      await resolveMonocartConfig({
+        css: true,
+        logging: 'warn',
+      })
+
+      expect(loggerSpy).toHaveBeenCalledWith(
+        '[monocart] CSS coverage is only available in browser mode. ' +
+          'Use "@oorabana/vitest-monocart-coverage/browser" for browser tests. ' +
+          'CSS option will be ignored in Node.js mode.',
+      )
+
+      loggerSpy.mockRestore()
+    })
   })
 })

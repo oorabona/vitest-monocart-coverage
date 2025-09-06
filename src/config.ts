@@ -7,6 +7,36 @@ import { createLogger } from './logger.js'
 import type { MonocartCoverageOptions, RequiredMonocartCoverageOptions } from './types.js'
 
 /**
+ * Detects if we're running in a browser environment
+ */
+function isBrowserEnvironment(): boolean {
+  return typeof globalThis !== 'undefined' && 'window' in globalThis
+}
+
+/**
+ * Validates CSS option usage based on environment context
+ */
+function validateCssOption(config: RequiredMonocartCoverageOptions): void {
+  if (!config.css) {
+    return // No CSS option set, nothing to validate
+  }
+
+  const isBrowser = isBrowserEnvironment()
+
+  if (!isBrowser) {
+    const logger = createLogger(config.logging)
+    logger.warn(
+      '[monocart] CSS coverage is only available in browser mode. ' +
+        'Use "@oorabana/vitest-monocart-coverage/browser" for browser tests. ' +
+        'CSS option will be ignored in Node.js mode.',
+    )
+
+    // Disable CSS in Node.js mode
+    config.css = false
+  }
+}
+
+/**
  * Validates critical configuration properties that could cause runtime failures
  * Focuses on external config files where we have no compile-time type safety
  */
@@ -62,7 +92,7 @@ const DEFAULT_CONFIG: RequiredMonocartCoverageOptions = {
   sourceFilter: () => true,
   cleanCache: true,
   logging: 'info',
-  css: true,
+  css: false,
   onEnd: () => {},
 }
 
@@ -291,6 +321,9 @@ export async function resolveMonocartConfig(
   if (customOptions) {
     config = { ...config, ...customOptions }
   }
+
+  // Validate CSS option based on environment
+  validateCssOption(config)
 
   return config
 }
