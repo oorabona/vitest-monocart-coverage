@@ -25,13 +25,14 @@ try {
   
   const existingContent = match.groups.content.trim();
   
-  // If there's already content, don't modify it
-  if (existingContent) {
-    console.log("ℹ️  [Unreleased] section already has content, skipping auto-population");
-    process.exit(0);
-  }
+  // Determine strategy based on existing content
+  const hasManualContent = existingContent && !existingContent.includes("No notable changes");
   
-  console.log("ℹ️  [Unreleased] section is empty, populating with recent commits...");
+  if (hasManualContent) {
+    console.log("ℹ️  [Unreleased] section has manual content, checking for additional git commits...");
+  } else {
+    console.log("ℹ️  [Unreleased] section is empty, populating with recent commits...");
+  }
   
   // Get the latest tag to determine commit range
   let latestTag: string;
@@ -56,8 +57,13 @@ try {
   }
   
   if (!commits) {
-    console.log("ℹ️  No new commits since last tag, adding placeholder");
-    commits = "- No notable changes";
+    if (hasManualContent) {
+      console.log("ℹ️  No new git commits since last tag, keeping existing manual content");
+      process.exit(0); // Keep existing content as-is
+    } else {
+      console.log("ℹ️  No new commits since last tag, adding placeholder");
+      commits = "- No notable changes";
+    }
   } else {
     // Filter out merge commits and dependency updates for cleaner changelog
     const commitLines = commits.split('\n');
@@ -69,20 +75,49 @@ try {
              !line.includes('update dependency');
     });
     
-    // Group commits by conventional commit types if they follow the pattern
-    const groupedCommits = groupCommitsByType(filteredCommits);
-    
-    if (Object.keys(groupedCommits).length > 0) {
-      commits = formatGroupedCommits(groupedCommits);
+    if (filteredCommits.length === 0) {
+      if (hasManualContent) {
+        console.log("ℹ️  No notable git commits since last tag, keeping existing manual content");
+        process.exit(0);
+      } else {
+        commits = "- No notable changes";
+      }
     } else {
-      commits = filteredCommits.join('\n') || "- No notable changes";
+      // Group commits by conventional commit types if they follow the pattern
+      const groupedCommits = groupCommitsByType(filteredCommits);
+      
+      if (Object.keys(groupedCommits).length > 0) {
+        commits = formatGroupedCommits(groupedCommits);
+      } else {
+        commits = filteredCommits.join('\n');
+      }
     }
   }
   
-  console.log(`📝 Adding ${commits.split('\n').length} commit(s) to [Unreleased] section`);
+  let newContent: string;
   
-  // Replace the empty Unreleased section with populated content
-  const newContent = `${match.groups.prefix}${commits}\n\n`;
+  if (hasManualContent) {
+    // Merge manual content with git commits, avoiding duplication
+    console.log(`📝 Merging existing manual content with ${commits.split('\n').length} git commit(s)`);
+    
+    // Smart merge: append git commits to existing sections or create new ones
+    const gitCommitLines = commits.split('\n');
+    const manualLines = existingContent.split('\n');
+    
+    // If manual content has sections (### Added, ### Fixed, etc.), try to merge intelligently
+    if (existingContent.includes('### ') && commits.includes('### ')) {
+      newContent = `${match.groups.prefix}${mergeChangelogSections(existingContent, commits)}\n\n`;
+    } else {
+      // Simple append with separator for raw commits
+      const separator = existingContent.includes('### ') ? '\n\n### Additional Changes from Git\n' : '\n\n';
+      newContent = `${match.groups.prefix}${existingContent}${separator}${commits}\n\n`;
+    }
+  } else {
+    // Replace empty section with git commits only
+    console.log(`📝 Adding ${commits.split('\n').length} commit(s) to [Unreleased] section`);
+    newContent = `${match.groups.prefix}${commits}\n\n`;
+  }
+  
   changelog = changelog.replace(unreleasedBlock, newContent);
   
   writeFileSync(changelogPath, changelog, "utf8");
@@ -157,4 +192,76 @@ function formatGroupedCommits(groups: Record<string, string[]>): string {
   }
   
   return sections.join('\n').trim();
+}
+
+/**
+ * Merge manual changelog sections with git-generated sections
+ */
+function mergeChangelogSections(manualContent: string, gitContent: string): string {
+  const manualSections = parseChangelogSections(manualContent);
+  const gitSections = parseChangelogSections(gitContent);
+  
+  // Merge sections, manual takes priority for organization
+  const mergedSections: Record<string, string[]> = { ...manualSections };
+  
+  // Append git items to corresponding sections
+  for (const [sectionName, gitItems] of Object.entries(gitSections)) {
+    if (mergedSections[sectionName]) {
+      // Filter out potential duplicates based on similar text
+      const newItems = gitItems.filter(gitItem => 
+        !mergedSections[sectionName].some(manualItem => 
+          areSimilarChangelogItems(manualItem, gitItem)
+        )
+      );
+      mergedSections[sectionName].push(...newItems);
+    } else {
+      mergedSections[sectionName] = gitItems;
+    }
+  }
+  
+  // Format back to text
+  const sections: string[] = [];
+  const sectionOrder = ["### Added", "### Fixed", "### Changed", "### Removed", "### Security"];
+  
+  for (const sectionTitle of sectionOrder) {
+    if (mergedSections[sectionTitle] && mergedSections[sectionTitle].length > 0) {
+      sections.push(sectionTitle);
+      sections.push(...mergedSections[sectionTitle]);
+      sections.push(""); // Empty line between sections
+    }
+  }
+  
+  return sections.join('\n').trim();
+}
+
+/**
+ * Parse changelog content into sections
+ */
+function parseChangelogSections(content: string): Record<string, string[]> {
+  const sections: Record<string, string[]> = {};
+  const lines = content.split('\n');
+  let currentSection = '';
+  
+  for (const line of lines) {
+    if (line.startsWith('### ')) {
+      currentSection = line;
+      sections[currentSection] = [];
+    } else if (line.startsWith('- ') && currentSection) {
+      sections[currentSection].push(line);
+    }
+  }
+  
+  return sections;
+}
+
+/**
+ * Check if two changelog items are similar (to avoid duplication)
+ */
+function areSimilarChangelogItems(item1: string, item2: string): boolean {
+  // Simple similarity check - could be enhanced with fuzzy matching
+  const normalize = (s: string) => s.toLowerCase().replace(/[^\w\s]/g, '').trim();
+  const norm1 = normalize(item1);
+  const norm2 = normalize(item2);
+  
+  return norm1.includes(norm2) || norm2.includes(norm1);
 }

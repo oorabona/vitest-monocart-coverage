@@ -1,0 +1,21 @@
+{
+  "increment": false,
+  "git": {
+    "changelog": false,
+    "commit": true,
+    "commitMessage": "docs: update changelog for next release",
+    "tag": false,
+    "push": false,
+    "requireCleanWorkingDir": false
+  },
+  "npm": {
+    "publish": false,
+    "skipChecks": true
+  },
+  "github": {
+    "release": false
+  },
+  "hooks": {
+    "before:init": ["pnpm tsx scripts/populate-unreleased.ts"]
+  }
+}

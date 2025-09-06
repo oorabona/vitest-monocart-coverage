@@ -126,10 +126,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      # ✅ FIX: Use --npm.publish=false instead of --no-npm
-      - name: Run release-it (Git operations only)
+      # Use no-changelog config to avoid modifying pre-prepared changelog
+      - name: Run release-it (Changelog-ready mode)
         run: |
-          pnpm release-it --ci \
+          pnpm release-it --ci --config .release-it.no-changelog.json \
             --increment ${{ github.event.inputs.release_type || 'patch' }} \
             ${{ github.event.inputs.preid && format('--preRelease {0}', github.event.inputs.preid) || '' }} \
             ${{ github.event.inputs.commit_sha && '--git.requireBranch=' || '' }}
