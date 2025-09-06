@@ -9,6 +9,8 @@
 
 A Vitest custom coverage provider that integrates Vitest's V8 coverage engine with [Monocart coverage reporting](https://github.com/cenfun/monocart-coverage-reports) for enhanced visualization and features.
 
+Architecturally speaking, it is not a full stack coverage provider but instead it sits on top of Vitest coverage-v8 package to enhance it by bridging it to Monocart.
+
 ## Features
 
 - 🚀 **Direct V8 Integration**: Intercepts raw V8 coverage data before Istanbul conversion
