@@ -30,22 +30,17 @@ interface RawCoverage {
  * 4. Passing enriched data to Monocart for processing and report generation
  */
 
-// Get version from package.json
-import pkg from '../package.json' with { type: 'json' }
-
-const VERSION: string = pkg.version
-
 export class MonocartCoverageProvider
   extends BaseCoverageProvider<ResolvedMonocartCoverageOptions>
   implements CoverageProvider
 {
   name = 'v8' as const
-  // get version from package.json
-  version = VERSION
 
   private reporter?: MonocartReporter
 
   async initialize(ctx: Vitest): Promise<void> {
+    // Align version with Vitest to prevent "mixed versions" warning
+    // We're a V8 addon that enhances the existing V8 provider, not a replacement
     this.version = ctx.version
 
     this._initialize(ctx)

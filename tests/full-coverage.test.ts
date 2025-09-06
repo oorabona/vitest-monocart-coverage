@@ -24,7 +24,6 @@ describe('Full module coverage', () => {
     const provider = new MonocartCoverageProvider()
     expect(provider).toBeInstanceOf(MonocartCoverageProvider)
     expect(provider.name).toBe('v8')
-    expect(provider.version).toBe('1.0.0')
   })
 
   it('should create coverage map', () => {
