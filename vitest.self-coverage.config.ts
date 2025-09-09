@@ -34,6 +34,7 @@ export default withMonocartProvider(
           '**/*.d.ts',
           '**/*.test.*',
           '**/*.spec.*',
+          '**/types.ts',
         ],
         clean: true,
         thresholds: {

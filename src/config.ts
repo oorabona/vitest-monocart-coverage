@@ -199,7 +199,7 @@ const configLoaders = new Map<RegExp, ConfigLoader>([
     async configPath => {
       // First try native ESM import (may work if the host has a loader)
       try {
-        const mod = await import(/* @vite-ignore */ pathToFileURL(configPath).href)
+        const mod = await import(pathToFileURL(configPath).href)
         /* v8 ignore next - Fallback if default export is missing */
         return mod?.default || mod
       } catch {
@@ -208,8 +208,8 @@ const configLoaders = new Map<RegExp, ConfigLoader>([
           const { createRequire } = await import('node:module')
           const req = createRequire(import.meta.url)
           req('vite-node/register')
-          const mod = await import(/* @vite-ignore */ pathToFileURL(configPath).href)
-          /* v8 ignore next - Fallback if default export is missing */
+          /* v8 ignore next 2 - Fallback if default export is missing */
+          const mod = await import(pathToFileURL(configPath).href)
           return mod?.default || mod
         } catch (err) {
           logger.warn(`Failed to load TS config via vite-node: ${err}`)
