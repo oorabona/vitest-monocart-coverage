@@ -9,6 +9,20 @@ import { readFileSync, writeFileSync } from "node:fs";
 
 const CHANGELOG_PATH = "CHANGELOG.md";
 
+/**
+ * Get GitHub repository URL for commit links
+ */
+function getGitHubRepoUrl(): string {
+  try {
+    const remoteUrl = execSync("git config --get remote.origin.url", { encoding: "utf8" }).trim();
+    // Convert git URL to https format and remove .git suffix
+    return remoteUrl.replace(/^git@github\.com:/, "https://github.com/").replace(/\.git$/, "");
+  } catch {
+    // Fallback if git command fails
+    return "https://github.com/oorabona/vitest-monocart-coverage";
+  }
+}
+
 interface CommitPart {
   type: string;
   scope?: string;
@@ -96,12 +110,13 @@ function parseCommitsWithMultiplePrefixes(gitOutput: string): string {
   // Format to changelog
   const sections: string[] = [];
   const sectionOrder = ["### Added", "### Fixed", "### Changed", "### Removed", "### Security"];
+  const repoUrl = getGitHubRepoUrl();
   
   for (const sectionTitle of sectionOrder) {
     if (groupedParts[sectionTitle] && groupedParts[sectionTitle].length > 0) {
       sections.push(sectionTitle);
       sections.push(...groupedParts[sectionTitle].map(part => 
-        `- ${part.description}${part.scope ? ` (${part.scope})` : ""} (${part.sha})`
+        `- ${part.description}${part.scope ? ` (${part.scope})` : ""} ([${part.sha}](${repoUrl}/commit/${part.sha}))`
       ));
       sections.push(""); // Empty line between sections
     }
