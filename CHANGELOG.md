@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2025-09-09
+
 ### Added
 - streamline hotfix and republish scripts by consolidating changelog population logic ([cd56ab8](https://github.com/oorabona/vitest-monocart-coverage/commit/cd56ab8))
 - enhance changelog script to include GitHub commit links ([a440cdf](https://github.com/oorabona/vitest-monocart-coverage/commit/a440cdf))
@@ -118,7 +120,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - update CI workflow and scripts for improved coverage reporting
 
 
-[Unreleased]: https://github.com/oorabona/vitest-monocart-coverage/compare/v1.2.0...HEAD
+[unreleased]: https://github.com/oorabona/vitest-monocart-coverage/compare/v2.0.0...HEAD
 [v1.0.0]: https://github.com/oorabona/vitest-monocart-coverage/releases/tag/v1.0.0
 [v1.1.0]: git+https://github.com/oorabona/vitest-monocart-coverage.git/releases/tag/v1.1.0
 [v1.2.0]: https://github.com/oorabona/vitest-monocart-coverage/releases/tag/v1.2.0
+
+[2.0.0]: https://github.com/oorabona/vitest-monocart-coverage/compare/v1.2.0...v2.0.0

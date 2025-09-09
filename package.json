@@ -1,6 +1,6 @@
 {
   "name": "@oorabona/vitest-monocart-coverage",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "A Vitest custom coverage provider that integrates with Monocart coverage reporting",
   "type": "module",
   "main": "./dist/index.js",
