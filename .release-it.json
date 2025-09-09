@@ -1,21 +1,21 @@
 {
-  "hooks": {
-    "before:bump": [
-      "pnpm tsx scripts/populate-unreleased.ts",
-      "pnpm tsx scripts/update-changelog.ts ${version}"
-    ]
-  },
-  "github": {
-    "release": true,
-    "releaseNotes": "pnpm tsx scripts/extract-changelog.ts ${version}"
+  "plugins": {
+    "@release-it/keep-a-changelog": {
+      "filename": "CHANGELOG.md",
+      "addUnreleased": true,
+      "keepUnreleased": false,
+      "addVersionUrl": true
+    }
   },
   "git": {
-    "changelog": "git log --pretty=format:'- %s' ${latestTag}..HEAD",
     "commitMessage": "release: bump v${version}",
     "tagName": "v${version}",
     "requireBranch": "main",
     "requireUpstream": false,
     "requireCleanWorkingDir": false
+  },
+  "github": {
+    "release": true
   },
   "npm": {
     "skipChecks": true,

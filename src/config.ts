@@ -225,6 +225,7 @@ const configLoaders = new Map<RegExp, ConfigLoader>([
  */
 function findConfigLoader(configFile: string): ConfigLoader {
   const entry = Array.from(configLoaders).find(([pattern]) => pattern.test(configFile))
+  /* v8 ignore next 3 - Should not happen due to prior existence check */
   if (!entry) {
     throw new Error(`No config loader found for file: ${configFile}`)
   }

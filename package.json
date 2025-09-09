@@ -93,6 +93,8 @@
   "devDependencies": {
     "@biomejs/biome": "^2.2.3",
     "@playwright/test": "^1.55.0",
+    "@release-it/conventional-changelog": "^10.0.1",
+    "@release-it/keep-a-changelog": "^7.0.0",
     "@types/istanbul-lib-coverage": "^2.0.6",
     "@types/node": "^24.3.1",
     "@types/picomatch": "^4.0.2",

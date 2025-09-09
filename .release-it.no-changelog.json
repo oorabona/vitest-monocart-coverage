@@ -1,11 +1,4 @@
 {
-  "hooks": {
-    "before:bump": []
-  },
-  "github": {
-    "release": true,
-    "releaseNotes": "pnpm tsx scripts/extract-changelog.ts ${version}"
-  },
   "git": {
     "changelog": false,
     "commitMessage": "release: bump v${version}",
@@ -13,6 +6,9 @@
     "requireBranch": "main",
     "requireUpstream": false,
     "requireCleanWorkingDir": false
+  },
+  "github": {
+    "release": true
   },
   "npm": {
     "skipChecks": true,

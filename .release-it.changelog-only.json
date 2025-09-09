@@ -1,5 +1,8 @@
 {
   "increment": false,
+  "hooks": {
+    "before:init": ["pnpm tsx scripts/populate-unreleased-simple.ts"]
+  },
   "git": {
     "changelog": false,
     "commit": false,
@@ -14,8 +17,5 @@
   },
   "github": {
     "release": false
-  },
-  "hooks": {
-    "before:init": ["pnpm tsx scripts/populate-unreleased.ts"]
   }
 }
