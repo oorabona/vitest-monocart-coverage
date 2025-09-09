@@ -72,6 +72,11 @@ function parseCommitsWithMultiplePrefixes(gitOutput: string): string {
     const [sha, ...bodyParts] = entry.split("|");
     const body = bodyParts.join("|").trim();
     
+    // Skip commits marked with [skip-changelog]
+    if (body.startsWith('[skip-changelog]')) {
+      continue;
+    }
+    
     if (sha && body) {
       const shortSha = sha.trim().substring(0, 7);
       const parts = extractConventionalCommitParts(body, shortSha);
@@ -143,6 +148,8 @@ function normalizeCommitType(type: string): string | false {
     chore: "### Changed",
     build: "### Changed",
     ci: false, // Ignore CI commits explicitly
+    release: false, // Ignore release commits
+    hotfix: false, // Ignore hotfix commits
     misc: "### Changed"
   };
   
