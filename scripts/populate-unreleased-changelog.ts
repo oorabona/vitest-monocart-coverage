@@ -80,6 +80,10 @@ function parseCommitsWithMultiplePrefixes(gitOutput: string): string {
   
   for (const part of allParts) {
     const sectionName = normalizeCommitType(part.type);
+    // Skip commits that are explicitly ignored (CI commits return false)
+    if (sectionName === false) {
+      continue;
+    }
     if (!groupedParts[sectionName]) {
       groupedParts[sectionName] = [];
     }
@@ -106,8 +110,8 @@ function parseCommitsWithMultiplePrefixes(gitOutput: string): string {
 /**
  * Normalize commit types to standard changelog categories
  */
-function normalizeCommitType(type: string): string {
-  const typeMap: Record<string, string> = {
+function normalizeCommitType(type: string): string | false {
+  const typeMap: Record<string, string | false> = {
     feat: "### Added",
     feature: "### Added",
     add: "### Added",
@@ -120,11 +124,12 @@ function normalizeCommitType(type: string): string {
     test: "### Changed",
     chore: "### Changed",
     build: "### Changed",
-    ci: "### Changed",
+    ci: false, // Ignore CI commits explicitly
     misc: "### Changed"
   };
   
-  return typeMap[type.toLowerCase()] || "### Changed";
+  const result = typeMap[type.toLowerCase()];
+  return result !== undefined ? result : "### Changed";
 }
 
 try {

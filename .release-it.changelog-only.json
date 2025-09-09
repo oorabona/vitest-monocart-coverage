@@ -1,7 +1,7 @@
 {
   "increment": false,
   "hooks": {
-    "before:init": ["pnpm tsx scripts/populate-unreleased-simple.ts"]
+    "before:init": ["pnpm tsx scripts/populate-unreleased-changelog.ts"]
   },
   "git": {
     "changelog": false,
