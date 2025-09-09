@@ -13,12 +13,19 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "node": "./dist/index.js",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "require": "./dist/index.cjs",
+      "default": "./dist/browser.js"
     },
     "./browser": {
       "types": "./dist/browser.d.ts",
-      "import": "./dist/browser.js"
+      "import": "./dist/browser.js",
+      "default": "./dist/browser.js"
+    },
+    "./browser-runtime": {
+      "types": "./dist/browser-runtime.d.ts",
+      "import": "./dist/browser-runtime.js"
     }
   },
   "files": [
@@ -34,13 +41,21 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:browser": "vitest run --config vitest.browser.config.ts",
     "test:coverage:self": "pnpm build:dev && vitest run --coverage --config vitest.self-coverage.config.ts",
     "test:coverage:self:prod": "pnpm build && vitest run --coverage --config vitest.self-coverage.config.ts",
+    "test:browser:coverage": "vitest run --coverage --config vitest.browser.config.ts",
+    "test:browser:coverage:self": "pnpm build:dev && vitest run --coverage --config vitest.self-coverage.browser.config.ts",
+    "test:browser:coverage:self:prod": "pnpm build && vitest run --coverage --config vitest.self-coverage.browser.config.ts",
+    "test:integration": "playwright test",
+    "test:integration:ui": "playwright test --ui",
+    "test:integration:debug": "playwright test --debug",
+    "test:all": "pnpm test && pnpm test:integration",
+    "test:all:coverage": "pnpm test:coverage:self && pnpm test:integration",
     "test:ui": "vitest --ui",
     "check:fix": "biome check --write .",
     "check": "biome check .",
     "clean": "rimraf dist",
+    "clean:all": "rimraf dist coverage browser-coverage self-coverage self-browser-coverage",
     "prepare": "simple-git-hooks",
     "release": "pnpm release-it --config .release-it.no-changelog.json",
     "release:auto": "pnpm release-it",
@@ -49,6 +64,7 @@
     "republish": "pnpm release-it --config .release-it.republish.json",
     "changelog:prepare": "pnpm release-it --config .release-it.changelog-only.json --ci",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
+    "typecheck:browser": "tsc --noEmit -p tsconfig.browser.json",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
@@ -61,8 +77,8 @@
   "author": "Olivier Orabona <olivier.orabona@gmail.com>",
   "license": "MIT",
   "peerDependencies": {
-    "vitest": "^2.0.0",
-    "@vitest/browser": ">=2.0.0"
+    "@vitest/browser": ">=2.0.0",
+    "vitest": "^2.0.0"
   },
   "peerDependenciesMeta": {
     "@vitest/browser": {
@@ -71,10 +87,12 @@
   },
   "dependencies": {
     "monocart-coverage-reports": "^2.12.6",
-    "picomatch": "^4.0.3"
+    "picomatch": "^4.0.3",
+    "zod": "^4.1.5"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.3",
+    "@playwright/test": "^1.55.0",
     "@types/istanbul-lib-coverage": "^2.0.6",
     "@types/node": "^24.3.1",
     "@types/picomatch": "^4.0.2",
@@ -85,11 +103,12 @@
     "nano-staged": "^0.8.0",
     "playwright": "^1.55.0",
     "release-it": "^19.0.4",
-    "simple-git-hooks": "^2.11.1",
+    "rimraf": "^6.0.1",
+    "simple-git-hooks": "^2.13.1",
     "tsup": "^8.5.0",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2",
-    "vite": "^7.1.4",
+    "vite": "^7.1.5",
     "vitest": "^3.2.4"
   },
   "publishConfig": {

@@ -124,8 +124,7 @@ describe('MonocartReporter', () => {
     await reporter.clean()
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Failed to clean coverage directory'),
-      expect.any(Error),
+      expect.stringContaining('[reporter] Failed to clean coverage directory'),
     )
 
     consoleSpy.mockRestore()
@@ -245,7 +244,7 @@ describe('MonocartReporter', () => {
     expect(mockMcr.add).not.toHaveBeenCalled()
     expect(mockMcr.generate).toHaveBeenCalled()
     expect(consoleSpy).toHaveBeenCalledWith(
-      'Non-V8 coverage data provided to generateReport, skipping transformation',
+      '[reporter] Non-V8 coverage data provided to generateReport, skipping transformation',
     )
 
     consoleSpy.mockRestore()
@@ -278,7 +277,7 @@ describe('MonocartReporter', () => {
 
     expect(mockMcr.generate).toHaveBeenCalled()
     expect(consoleSpy).toHaveBeenCalledWith(
-      'Non-V8 coverage data provided to generateReport, skipping transformation',
+      '[reporter] Non-V8 coverage data provided to generateReport, skipping transformation',
     )
 
     consoleSpy.mockRestore()
@@ -324,7 +323,7 @@ describe('MonocartReporter', () => {
 
     expect(mockMcr.generate).toHaveBeenCalled()
     expect(consoleSpy).toHaveBeenCalledWith(
-      'Non-V8 coverage data provided to generateReport, skipping transformation',
+      '[reporter] Non-V8 coverage data provided to generateReport, skipping transformation',
     )
 
     consoleSpy.mockRestore()
@@ -356,7 +355,7 @@ describe('MonocartReporter', () => {
 
     expect(mockMcr.generate).toHaveBeenCalled()
     expect(consoleSpy).toHaveBeenCalledWith(
-      'Non-V8 coverage data provided to generateReport, skipping transformation',
+      '[reporter] Non-V8 coverage data provided to generateReport, skipping transformation',
     )
 
     consoleSpy.mockRestore()
@@ -392,5 +391,151 @@ describe('MonocartReporter', () => {
       },
     ])
     expect(mockMcr.generate).toHaveBeenCalled()
+  })
+})
+
+describe('MonocartReporter sourceFilter normalization', () => {
+  it('should handle HTTP URLs correctly', async () => {
+    const mockSourceFilter = vi.fn().mockReturnValue(true)
+    const config = createFullConfig({
+      sourceFilter: mockSourceFilter,
+    })
+
+    const reporter = await MonocartReporter.create(config)
+
+    // Access the normalized filter directly via private method testing
+    const normalizedFilter = (reporter as any).createNormalizedSourceFilter()
+
+    normalizedFilter('http://localhost:3000/src/component.ts')
+
+    expect(mockSourceFilter).toHaveBeenCalledWith('src/component.ts')
+  })
+
+  it('should handle HTTPS URLs correctly', async () => {
+    const mockSourceFilter = vi.fn().mockReturnValue(true)
+    const config = createFullConfig({
+      sourceFilter: mockSourceFilter,
+    })
+
+    const reporter = await MonocartReporter.create(config)
+    const normalizedFilter = (reporter as any).createNormalizedSourceFilter()
+
+    normalizedFilter('https://localhost:5173/src/utils/helper.js')
+
+    expect(mockSourceFilter).toHaveBeenCalledWith('src/utils/helper.js')
+  })
+
+  it('should handle malformed URLs gracefully', async () => {
+    const mockSourceFilter = vi.fn().mockReturnValue(true)
+    const config = createFullConfig({
+      sourceFilter: mockSourceFilter,
+    })
+
+    const reporter = await MonocartReporter.create(config)
+    const normalizedFilter = (reporter as any).createNormalizedSourceFilter()
+
+    normalizedFilter('http://[invalid-url')
+
+    expect(mockSourceFilter).toHaveBeenCalledWith('http://[invalid-url')
+  })
+
+  it('should handle @fs/ prefix removal', async () => {
+    const mockSourceFilter = vi.fn().mockReturnValue(true)
+    const config = createFullConfig({
+      sourceFilter: mockSourceFilter,
+    })
+
+    const reporter = await MonocartReporter.create(config)
+    const normalizedFilter = (reporter as any).createNormalizedSourceFilter()
+
+    normalizedFilter('@fs/src/component.ts')
+
+    expect(mockSourceFilter).toHaveBeenCalledWith('src/component.ts')
+  })
+
+  it('should handle leading slash removal', async () => {
+    const mockSourceFilter = vi.fn().mockReturnValue(true)
+    const config = createFullConfig({
+      sourceFilter: mockSourceFilter,
+    })
+
+    const reporter = await MonocartReporter.create(config)
+    const normalizedFilter = (reporter as any).createNormalizedSourceFilter()
+
+    normalizedFilter('//src/component.ts')
+
+    expect(mockSourceFilter).toHaveBeenCalledWith('src/component.ts')
+  })
+
+  it('should handle backslash to forward slash conversion', async () => {
+    const mockSourceFilter = vi.fn().mockReturnValue(true)
+    const config = createFullConfig({
+      sourceFilter: mockSourceFilter,
+    })
+
+    const reporter = await MonocartReporter.create(config)
+    const normalizedFilter = (reporter as any).createNormalizedSourceFilter()
+
+    normalizedFilter('src\\component.ts')
+
+    expect(mockSourceFilter).toHaveBeenCalledWith('src/component.ts')
+  })
+
+  it('should prepend sourcePath for files without directory', async () => {
+    const mockSourceFilter = vi.fn().mockReturnValue(true)
+    const config = createFullConfig({
+      sourceFilter: mockSourceFilter,
+      sourcePath: 'src',
+    })
+
+    const reporter = await MonocartReporter.create(config)
+    const normalizedFilter = (reporter as any).createNormalizedSourceFilter()
+
+    normalizedFilter('component.ts')
+
+    expect(mockSourceFilter).toHaveBeenCalledWith('src/component.ts')
+  })
+
+  it('should not prepend sourcePath for files with directory', async () => {
+    const mockSourceFilter = vi.fn().mockReturnValue(true)
+    const config = createFullConfig({
+      sourceFilter: mockSourceFilter,
+      sourcePath: 'src',
+    })
+
+    const reporter = await MonocartReporter.create(config)
+    const normalizedFilter = (reporter as any).createNormalizedSourceFilter()
+
+    normalizedFilter('lib/utils.ts')
+
+    expect(mockSourceFilter).toHaveBeenCalledWith('lib/utils.ts')
+  })
+
+  it('should handle sourcePath with trailing slash', async () => {
+    const mockSourceFilter = vi.fn().mockReturnValue(true)
+    const config = createFullConfig({
+      sourceFilter: mockSourceFilter,
+      sourcePath: 'src/',
+    })
+
+    const reporter = await MonocartReporter.create(config)
+    const normalizedFilter = (reporter as any).createNormalizedSourceFilter()
+
+    normalizedFilter('component.ts')
+
+    expect(mockSourceFilter).toHaveBeenCalledWith('src/component.ts')
+  })
+
+  it('should return true when sourceFilter is undefined', async () => {
+    const config = createFullConfig({
+      sourceFilter: undefined,
+    })
+
+    const reporter = await MonocartReporter.create(config)
+    const normalizedFilter = (reporter as any).createNormalizedSourceFilter()
+
+    const result = normalizedFilter('src/component.ts')
+
+    expect(result).toBe(true) // Should return true when no filter is defined
   })
 })

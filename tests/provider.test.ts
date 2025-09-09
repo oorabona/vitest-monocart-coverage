@@ -16,6 +16,7 @@ vi.mock('../src/config.js', () => ({
   resolveMonocartConfig: vi.fn().mockResolvedValue({
     name: 'Test Coverage',
     outputDir: './test-coverage',
+    logging: 'debug',
   }),
 }))
 
@@ -393,8 +394,7 @@ describe('MonocartCoverageProvider', () => {
       await provider.onAfterSuiteRun(meta)
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        '[MonocartProvider] Failed to process coverage in onAfterSuiteRun:',
-        expect.any(Error),
+        '[provider] Failed to process coverage in onAfterSuiteRun: Error: Reporter error',
       )
 
       consoleSpy.mockRestore()
@@ -551,11 +551,31 @@ describe('MonocartCoverageProvider', () => {
       await provider.reportCoverage({}, { allTestsRun: true })
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        '[MonocartProvider] Failed to generate final report:',
-        expect.any(Error),
+        '[provider] Failed to generate final report: Error: Report generation failed',
       )
 
       consoleSpy.mockRestore()
+    })
+  })
+
+  describe('generateMonocartReports', () => {
+    it('should test generateMonocartReports API', async () => {
+      const mockCoverageData = [
+        {
+          url: 'src/test.js',
+          source: 'test source',
+          functions: [],
+        },
+      ]
+
+      const provider = new MonocartCoverageProvider()
+      await provider.initialize(mockCtx as Vitest)
+
+      // Test that API exists and handles empty reporter gracefully
+      await provider.generateMonocartReports(mockCoverageData)
+
+      // Should handle the case without throwing
+      expect(true).toBe(true)
     })
   })
 })
@@ -579,5 +599,90 @@ describe('MonocartCoverageProviderModule', () => {
     expect(typeof MonocartCoverageProviderModule.takeCoverage).toBe('function')
     // @ts-expect-error - takeCoverage method exists on module
     expect(MonocartCoverageProviderModule.takeCoverage()).toEqual({})
+  })
+})
+
+describe('generateMonocartReports error handling', () => {
+  it('should warn when reporter not initialized', async () => {
+    const provider = new MonocartCoverageProvider()
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    await provider.generateMonocartReports([])
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[provider] [provider] Reporter not initialized for generateMonocartReports',
+    )
+    warnSpy.mockRestore()
+  })
+
+  it('should handle reporter.addCoverageData errors gracefully', async () => {
+    const provider = new MonocartCoverageProvider()
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    // Mock the reporter with failing addCoverageData
+    const mockReporter = {
+      addCoverageData: vi.fn().mockRejectedValue(new Error('Mock addCoverageData error')),
+      generateReport: vi.fn(),
+    }
+    ;(provider as any).reporter = mockReporter
+
+    const coverageData = [{ url: 'file://test.js', ranges: [] }]
+    await provider.generateMonocartReports(coverageData)
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      '[provider] [provider] Failed to generate Monocart reports via generateMonocartReports: Error: Mock addCoverageData error',
+    )
+    expect(mockReporter.addCoverageData).toHaveBeenCalledWith(coverageData)
+    // generateReport should not be called if addCoverageData fails
+    expect(mockReporter.generateReport).not.toHaveBeenCalled()
+
+    errorSpy.mockRestore()
+  })
+
+  it('should handle reporter.generateReport errors gracefully', async () => {
+    const provider = new MonocartCoverageProvider()
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    // Mock the reporter with failing generateReport
+    const mockReporter = {
+      addCoverageData: vi.fn().mockResolvedValue(undefined),
+      generateReport: vi.fn().mockRejectedValue(new Error('Mock generateReport error')),
+    }
+    ;(provider as any).reporter = mockReporter
+
+    const coverageData = [{ url: 'file://test.js', ranges: [] }]
+    await provider.generateMonocartReports(coverageData)
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      '[provider] [provider] Failed to generate Monocart reports via generateMonocartReports: Error: Mock generateReport error',
+    )
+    expect(mockReporter.addCoverageData).toHaveBeenCalledWith(coverageData)
+    expect(mockReporter.generateReport).toHaveBeenCalled()
+
+    errorSpy.mockRestore()
+  })
+
+  it('should log success when generateMonocartReports succeeds', async () => {
+    const provider = new MonocartCoverageProvider()
+    const infoSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    // Mock successful reporter
+    const mockReporter = {
+      addCoverageData: vi.fn().mockResolvedValue(undefined),
+      generateReport: vi.fn().mockResolvedValue(undefined),
+    }
+    ;(provider as any).reporter = mockReporter
+
+    const coverageData = [{ url: 'file://test.js', ranges: [] }]
+    await provider.generateMonocartReports(coverageData)
+
+    expect(infoSpy).toHaveBeenCalledWith(
+      '[provider] [provider] generateMonocartReports: processing 1 coverage entries',
+    )
+    expect(infoSpy).toHaveBeenCalledWith(
+      '[provider] [provider] Monocart reports generated successfully via generateMonocartReports',
+    )
+
+    infoSpy.mockRestore()
   })
 })

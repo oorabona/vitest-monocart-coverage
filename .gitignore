@@ -20,6 +20,8 @@ lib-cov
 
 # (All) Coverage directories used by tools like istanbul
 *coverage
+*-coverage
+coverage-*
 *.lcov
 
 # nyc test coverage
@@ -137,3 +139,15 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Playwright test reports
+test-results/
+
+# Temporary browser CSS config files
+vitest-browser-css-config.json
+.vitest-browser-css-config
+
+# Test artifacts and temporary directories
+test-config-temp-*/
+tests/__screenshots__/
+**/__screenshots__/

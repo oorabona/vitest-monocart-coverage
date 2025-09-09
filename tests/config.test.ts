@@ -407,7 +407,7 @@ describe('resolveMonocartConfig', () => {
       await resolveMonocartConfig(customOptions, mockVitestCtx as Vitest)
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('[monocart] Created sourceFilter from Vitest patterns'),
+        expect.stringContaining('[config] Created sourceFilter from Vitest patterns'),
       )
 
       consoleSpy.mockRestore()
@@ -429,7 +429,7 @@ describe('resolveMonocartConfig', () => {
       await resolveMonocartConfig(customOptions, mockVitestCtx as Vitest)
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('[monocart] Created sourceFilter from Vitest patterns'),
+        expect.stringContaining('[config] Created sourceFilter from Vitest patterns'),
       )
 
       consoleSpy.mockRestore()
@@ -568,7 +568,7 @@ describe('resolveMonocartConfig', () => {
       writeFileSync(configPath, JSON.stringify(invalidConfig))
 
       await expect(resolveMonocartConfig(undefined, undefined, testDir)).rejects.toThrow(
-        'Invalid outputDir in monocart.config.json: expected string, got number',
+        'Invalid configuration in monocart.config.json',
       )
     })
 
@@ -583,7 +583,7 @@ describe('resolveMonocartConfig', () => {
       writeFileSync(configPath, configContent)
 
       await expect(resolveMonocartConfig(undefined, undefined, testDir)).rejects.toThrow(
-        'Invalid reports in monocart.config.cjs: expected array, got string',
+        'Invalid configuration in monocart.config.cjs',
       )
     })
 
@@ -598,7 +598,7 @@ describe('resolveMonocartConfig', () => {
       writeFileSync(configPath, configContent)
 
       await expect(resolveMonocartConfig(undefined, undefined, testDir)).rejects.toThrow(
-        'Invalid sourceFilter in monocart.config.mjs: expected function, got string',
+        'Invalid configuration in monocart.config.mjs',
       )
     })
 
@@ -613,7 +613,7 @@ describe('resolveMonocartConfig', () => {
       writeFileSync(configPath, configContent)
 
       await expect(resolveMonocartConfig(undefined, undefined, testDir)).rejects.toThrow(
-        'Invalid logging in monocart.config.js: expected one of debug, info, warn, error, got invalid-level',
+        'Invalid configuration in monocart.config.js',
       )
     })
 
@@ -626,7 +626,7 @@ describe('resolveMonocartConfig', () => {
       writeFileSync(configPath, JSON.stringify(invalidConfig))
 
       await expect(resolveMonocartConfig(undefined, undefined, testDir)).rejects.toThrow(
-        'Invalid onEnd in monocart.config.json: expected function, got string',
+        'Invalid configuration in monocart.config.json',
       )
     })
 
@@ -639,7 +639,7 @@ describe('resolveMonocartConfig', () => {
       writeFileSync(configPath, JSON.stringify(invalidConfig))
 
       await expect(resolveMonocartConfig(undefined, undefined, testDir)).rejects.toThrow(
-        'Invalid logging in monocart.config.json: expected one of debug, info, warn, error, got 123',
+        'Invalid configuration in monocart.config.json',
       )
     })
 
@@ -915,7 +915,7 @@ describe('createSourceFilter', () => {
   })
 
   describe('CSS option validation', () => {
-    it('should warn and disable CSS option in Node.js environment', async () => {
+    it('should not warn or disable CSS option in Node.js environment', async () => {
       const loggerSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
       const config = await resolveMonocartConfig({
@@ -923,10 +923,40 @@ describe('createSourceFilter', () => {
         logging: 'warn',
       })
 
-      expect(loggerSpy).toHaveBeenCalledWith(
-        expect.stringContaining('CSS coverage is only available in browser mode'),
-      )
-      expect(config.css).toBe(false) // Should be disabled in Node.js
+      expect(loggerSpy).not.toHaveBeenCalled() // No warning - CSS handled at runtime
+      expect(config.css).toBe(true) // CSS remains enabled (handled by browser module at runtime)
+
+      loggerSpy.mockRestore()
+    })
+
+    it('should allow CSS option in browser environment', async () => {
+      const loggerSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      // Mock the browser environment by mocking globalThis.window
+      const originalWindow = globalThis.window
+      Object.defineProperty(globalThis, 'window', {
+        value: {
+          __vitest_browser_runner__: {},
+          location: { origin: 'http://localhost:3000' },
+        },
+        writable: true,
+        configurable: true,
+      })
+
+      const config = await resolveMonocartConfig({
+        css: true,
+        logging: 'warn',
+      })
+
+      expect(loggerSpy).not.toHaveBeenCalled() // No warning in browser mode
+      expect(config.css).toBe(true) // Should remain enabled in browser mode
+
+      // Restore original window state
+      if (originalWindow === undefined) {
+        delete globalThis.window
+      } else {
+        globalThis.window = originalWindow
+      }
 
       loggerSpy.mockRestore()
     })
@@ -959,7 +989,7 @@ describe('createSourceFilter', () => {
       loggerSpy.mockRestore()
     })
 
-    it('should warn about CSS usage with clear guidance message', async () => {
+    it('should not warn about CSS usage in Node.js mode', async () => {
       const loggerSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
       await resolveMonocartConfig({
@@ -967,11 +997,7 @@ describe('createSourceFilter', () => {
         logging: 'warn',
       })
 
-      expect(loggerSpy).toHaveBeenCalledWith(
-        '[monocart] CSS coverage is only available in browser mode. ' +
-          'Use "@oorabana/vitest-monocart-coverage/browser" for browser tests. ' +
-          'CSS option will be ignored in Node.js mode.',
-      )
+      expect(loggerSpy).not.toHaveBeenCalled() // No warning - CSS validation is runtime-only
 
       loggerSpy.mockRestore()
     })

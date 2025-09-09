@@ -5,6 +5,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     coverage: {
+      reportsDirectory: './coverage',
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       include: ['src/**/*'],
@@ -30,7 +31,13 @@ export default defineConfig({
       },
     },
     include: ['tests/**/*.test.ts'],
-    exclude: ['node_modules/', 'dist/', '**/*.d.ts'],
+    exclude: [
+      'node_modules/',
+      'dist/',
+      '**/*.d.ts',
+      'tests/integration/**/*.test.ts',
+      'tests/browser-simple.test.ts',
+    ],
     testTimeout: 10000,
     hookTimeout: 10000,
     teardownTimeout: 5000,

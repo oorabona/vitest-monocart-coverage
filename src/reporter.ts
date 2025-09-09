@@ -1,8 +1,8 @@
-import { existsSync, rmSync } from 'node:fs'
+// Dynamic import for Node.js fs module to avoid bundling issues
 import type { CoverageReport } from 'monocart-coverage-reports'
 import MCR from 'monocart-coverage-reports'
 import type { Logger } from './logger.js'
-import { createLogger } from './logger.js'
+import { loggerFactory } from './logger.js'
 import type { RequiredMonocartCoverageOptions, ScriptCoverageWithOffset } from './types.js'
 
 export class MonocartReporter {
@@ -13,7 +13,7 @@ export class MonocartReporter {
 
   private constructor(config: RequiredMonocartCoverageOptions) {
     this.config = config
-    this.logger = createLogger(config.logging)
+    this.logger = loggerFactory.getModuleLogger(import.meta.url)
   }
 
   static async create(config: RequiredMonocartCoverageOptions): Promise<MonocartReporter> {
@@ -21,13 +21,16 @@ export class MonocartReporter {
   }
 
   async clean(): Promise<void> {
-    if (this.config.outputDir && existsSync(this.config.outputDir)) {
-      try {
+    try {
+      const fsModule = 'node:fs'
+      const { existsSync, rmSync } = await import(/* @vite-ignore */ fsModule)
+      if (existsSync(this.config.outputDir)) {
         rmSync(this.config.outputDir, { recursive: true, force: true })
         this.logger.info(`Cleaned coverage output directory: ${this.config.outputDir}`)
-      } catch (error) {
-        console.warn(`Failed to clean coverage directory ${this.config.outputDir}:`, error)
       }
+    } catch (error) {
+      // Handle both fs import errors and file operation errors
+      this.logger.warn(`Failed to clean coverage directory ${this.config.outputDir}: ${error}`)
     }
   }
 
@@ -40,7 +43,8 @@ export class MonocartReporter {
         lcov: this.config.lcov,
         cleanCache: this.config.cleanCache,
         sourcePath: this.config.sourcePath,
-        sourceFilter: this.config.sourceFilter,
+        // Wrap sourceFilter to improve path normalization for browser mode
+        sourceFilter: this.createNormalizedSourceFilter(),
         logging: this.config.logging,
         css: this.config.css,
         onEnd: this.config.onEnd,
@@ -99,10 +103,34 @@ export class MonocartReporter {
       await this.mcr!.generate()
 
       const { outputDir } = this.config
-      console.log(`Monocart coverage report generated in: ${outputDir}`)
+      this.logger.info(`Monocart coverage report generated in: ${outputDir}`)
     } catch (error) {
-      console.error('Failed to generate Monocart coverage report:', error)
+      this.logger.error(`Failed to generate Monocart coverage report: ${error}`)
       throw error
+    }
+  }
+
+  /**
+   * Creates a normalized source filter that handles path normalization for browser mode
+   * @returns A source filter function that normalizes paths before applying user filters
+   */
+  private createNormalizedSourceFilter(): (p: string) => boolean {
+    return (p: string) => {
+      let s = String(p)
+      try {
+        if (s.startsWith('http://') || s.startsWith('https://')) {
+          const u = new URL(s)
+          s = decodeURIComponent(u.pathname)
+        }
+      } catch {}
+      s = s
+        .replace(/^@fs\//, '')
+        .replace(/^\/+/, '')
+        .replace(/\\/g, '/')
+      if (!s.includes('/') && this.config.sourcePath) {
+        s = `${this.config.sourcePath.replace(/\/$/, '')}/${s}`
+      }
+      return this.config.sourceFilter?.(s) ?? true
     }
   }
 }

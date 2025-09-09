@@ -3,11 +3,12 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "lib": ["ES2022"],
+    "lib": ["DOM", "ES2022"],
     "baseUrl": ".",
     "paths": {
       "@oorabona/vitest-monocart-coverage": ["src/index.ts"],
-      "@oorabona/vitest-monocart-coverage/*": ["src/*"]
+      "@oorabona/vitest-monocart-coverage/*": ["src/*"],
+      "@oorabona/vitest-monocart-coverage/browser": ["src/browser.ts"]
     },
     "declaration": true,
     "declarationMap": true,

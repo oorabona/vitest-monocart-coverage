@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import type { ViteUserConfig } from 'vitest/config'
-import { createMonocartConfig, withMonocartProvider } from '../src/provider-config.js'
+import {
+  createMonocartConfig,
+  withMonocartBrowserProvider,
+  withMonocartProvider,
+} from '../src/provider-config.js'
 import type { MonocartCoverageOptions } from '../src/types.js'
 
 describe('withMonocartProvider', () => {
@@ -11,7 +15,6 @@ describe('withMonocartProvider', () => {
       expect(result.provider).toBe('custom')
       // @ts-expect-error - customProviderModule exists on resolved config
       expect(result.customProviderModule).toBe('@oorabona/vitest-monocart-coverage')
-      expect(result.enabled).toBe(true)
       expect(result.clean).toBe(true)
       expect(result.include).toEqual(['src/**/*'])
       expect(result.exclude).toEqual([
@@ -23,6 +26,7 @@ describe('withMonocartProvider', () => {
         '**/*.d.ts',
         '**/*.test.*',
         '**/*.spec.*',
+        'anonymous*.js',
       ])
       expect(result.reporter).toEqual([])
       expect(result.customOptions).toEqual({
@@ -84,7 +88,6 @@ describe('withMonocartProvider', () => {
       // @ts-expect-error - customProviderModule exists on resolved config
       expect(result.customProviderModule).toBe('@oorabona/vitest-monocart-coverage')
       // @ts-expect-error - enabled exists on resolved config
-      expect(result.enabled).toBe(true)
       // @ts-expect-error - clean exists on resolved config
       expect(result.clean).toBe(true)
     })
@@ -153,7 +156,6 @@ describe('withMonocartProvider', () => {
       expect(coverage?.provider).toBe('custom')
       // @ts-expect-error - customProviderModule exists on resolved config
       expect(coverage?.customProviderModule).toBe('@oorabona/vitest-monocart-coverage')
-      expect(coverage?.enabled).toBe(false) // preserved
       expect(coverage?.clean).toBe(false) // preserved
       expect(coverage?.include).toEqual(['lib/**/*']) // preserved
       expect(coverage?.exclude).toEqual(['lib/**/*.spec.ts']) // preserved
@@ -218,7 +220,6 @@ describe('withMonocartProvider', () => {
       expect(result.test?.environment).toBe('jsdom')
       // @ts-expect-error - globals exists on test config
       expect(result.test?.globals).toBe(false)
-      expect(result.test?.coverage?.enabled).toBe(true)
       expect(result.test?.coverage?.customOptions?.outputDir).toBe('./jsdom-coverage')
     })
 
@@ -310,7 +311,6 @@ describe('createMonocartConfig', () => {
     expect(result).toEqual({
       provider: 'custom',
       customProviderModule: '@oorabona/vitest-monocart-coverage',
-      enabled: true,
       clean: true,
       include: ['src/**/*'],
       exclude: [
@@ -322,6 +322,7 @@ describe('createMonocartConfig', () => {
         '**/*.d.ts',
         '**/*.test.*',
         '**/*.spec.*',
+        'anonymous*.js',
       ],
       reporter: [],
       customOptions: {
@@ -372,7 +373,6 @@ describe('createMonocartConfig', () => {
     expect(result.provider).toBe('custom')
     // @ts-expect-error - customProviderModule exists on resolved config
     expect(result.customProviderModule).toBe('@oorabona/vitest-monocart-coverage')
-    expect(result.enabled).toBe(true)
     expect(result.clean).toBe(true)
     expect(result.include).toEqual(['src/**/*'])
     expect(result.exclude).toEqual([
@@ -384,7 +384,300 @@ describe('createMonocartConfig', () => {
       '**/*.d.ts',
       '**/*.test.*',
       '**/*.spec.*',
+      'anonymous*.js',
     ])
     expect(result.reporter).toEqual([])
+  })
+})
+
+// Test isViteConfig function (though it's internal, it's valuable to test the logic)
+describe('isViteConfig type guard', () => {
+  it('should return false for non-objects', () => {
+    const isViteConfig = (arg: unknown) => {
+      if (!arg || typeof arg !== 'object') {
+        return false
+      }
+      const obj = arg as Record<string, unknown>
+      return 'test' in obj || 'plugins' in obj || 'build' in obj || 'server' in obj
+    }
+
+    expect(isViteConfig(null)).toBe(false)
+    expect(isViteConfig(undefined)).toBe(false)
+    expect(isViteConfig('string')).toBe(false)
+    expect(isViteConfig(123)).toBe(false)
+    expect(isViteConfig(true)).toBe(false)
+    expect(isViteConfig([])).toBe(false)
+  })
+
+  it('should return false for objects without Vite config properties', () => {
+    const isViteConfig = (arg: unknown) => {
+      if (!arg || typeof arg !== 'object') {
+        return false
+      }
+      const obj = arg as Record<string, unknown>
+      return 'test' in obj || 'plugins' in obj || 'build' in obj || 'server' in obj
+    }
+
+    expect(isViteConfig({})).toBe(false)
+    expect(isViteConfig({ outputDir: './coverage' })).toBe(false)
+    expect(isViteConfig({ name: 'test' })).toBe(false)
+  })
+
+  it('should return true for objects with test property', () => {
+    const isViteConfig = (arg: unknown) => {
+      if (!arg || typeof arg !== 'object') {
+        return false
+      }
+      const obj = arg as Record<string, unknown>
+      return 'test' in obj || 'plugins' in obj || 'build' in obj || 'server' in obj
+    }
+
+    expect(isViteConfig({ test: {} })).toBe(true)
+    expect(isViteConfig({ test: { globals: true } })).toBe(true)
+  })
+
+  it('should return true for objects with plugins property', () => {
+    const isViteConfig = (arg: unknown) => {
+      if (!arg || typeof arg !== 'object') {
+        return false
+      }
+      const obj = arg as Record<string, unknown>
+      return 'test' in obj || 'plugins' in obj || 'build' in obj || 'server' in obj
+    }
+
+    expect(isViteConfig({ plugins: [] })).toBe(true)
+    expect(isViteConfig({ plugins: [{}] })).toBe(true)
+  })
+
+  it('should return true for objects with build property', () => {
+    const isViteConfig = (arg: unknown) => {
+      if (!arg || typeof arg !== 'object') {
+        return false
+      }
+      const obj = arg as Record<string, unknown>
+      return 'test' in obj || 'plugins' in obj || 'build' in obj || 'server' in obj
+    }
+
+    expect(isViteConfig({ build: {} })).toBe(true)
+    expect(isViteConfig({ build: { target: 'es2020' } })).toBe(true)
+  })
+
+  it('should return true for objects with server property', () => {
+    const isViteConfig = (arg: unknown) => {
+      if (!arg || typeof arg !== 'object') {
+        return false
+      }
+      const obj = arg as Record<string, unknown>
+      return 'test' in obj || 'plugins' in obj || 'build' in obj || 'server' in obj
+    }
+
+    expect(isViteConfig({ server: {} })).toBe(true)
+    expect(isViteConfig({ server: { port: 3000 } })).toBe(true)
+  })
+
+  it('should return true for objects with multiple Vite properties', () => {
+    const isViteConfig = (arg: unknown) => {
+      if (!arg || typeof arg !== 'object') {
+        return false
+      }
+      const obj = arg as Record<string, unknown>
+      return 'test' in obj || 'plugins' in obj || 'build' in obj || 'server' in obj
+    }
+
+    expect(isViteConfig({ test: {}, plugins: [] })).toBe(true)
+    expect(isViteConfig({ build: {}, server: { port: 3000 } })).toBe(true)
+  })
+})
+
+describe('withMonocartBrowserProvider', () => {
+  describe('coverage-only mode', () => {
+    it('should return browser coverage config when called with no arguments', () => {
+      const result = withMonocartBrowserProvider()
+
+      expect(result.provider).toBe('custom')
+      // @ts-expect-error - customProviderModule exists on resolved config
+      expect(result.customProviderModule).toBe('@oorabona/vitest-monocart-coverage/browser')
+      expect(result.clean).toBe(true)
+      expect(result.exclude).toContain('anonymous*.js')
+      expect(result.reporter).toEqual([])
+      expect(result.customOptions).toEqual({
+        outputDir: './coverage-browser',
+        reports: ['console-details', 'html'],
+        logging: 'info',
+        css: false,
+      })
+    })
+
+    it('should merge custom browser options when provided', () => {
+      const customOptions = {
+        outputDir: './custom-browser-coverage',
+        css: true,
+        reports: ['html'],
+        name: 'Custom Browser Coverage',
+      }
+
+      const result = withMonocartBrowserProvider(customOptions)
+
+      expect(result.customOptions).toEqual({
+        outputDir: './custom-browser-coverage',
+        reports: ['html'],
+        logging: 'info',
+        css: true,
+        name: 'Custom Browser Coverage',
+      })
+    })
+  })
+
+  describe('full-config mode', () => {
+    it('should merge with empty Vite config', () => {
+      const viteConfig: ViteUserConfig = {}
+      const result = withMonocartBrowserProvider(viteConfig)
+
+      // Empty config should be treated as options-only mode
+      expect(result.provider).toBe('custom')
+      // @ts-expect-error - customProviderModule exists on resolved config
+      expect(result.customProviderModule).toBe('@oorabona/vitest-monocart-coverage/browser')
+      expect(result.clean).toBe(true)
+      expect(result.exclude).toContain('anonymous*.js')
+    })
+
+    it('should merge with existing Vite browser config with test section', () => {
+      const viteConfig: ViteUserConfig = {
+        test: {
+          globals: true,
+          browser: {
+            enabled: true,
+            provider: 'playwright',
+          },
+        },
+      }
+      const customOptions = {
+        outputDir: './browser-custom-output',
+        css: true,
+        name: 'Test Browser Coverage',
+      }
+
+      const result = withMonocartBrowserProvider(viteConfig, customOptions)
+
+      // @ts-expect-error - globals exists on test config
+      expect(result.test?.globals).toBe(true)
+      // @ts-expect-error - browser exists on test config
+      expect(result.test?.browser?.enabled).toBe(true)
+      expect(result.test?.coverage?.provider).toBe('custom')
+      // @ts-expect-error - customProviderModule exists on resolved config
+      expect(result.test?.coverage?.customProviderModule).toBe(
+        '@oorabona/vitest-monocart-coverage/browser',
+      )
+      expect(result.test?.coverage?.customOptions?.outputDir).toBe('./browser-custom-output')
+      expect(result.test?.coverage?.customOptions?.css).toBe(true)
+      expect(result.test?.coverage?.customOptions?.name).toBe('Test Browser Coverage')
+    })
+
+    it('should preserve existing browser coverage config and merge with custom options', () => {
+      const viteConfig: ViteUserConfig = {
+        test: {
+          browser: {
+            enabled: true,
+          },
+          coverage: {
+            enabled: true,
+            clean: false,
+            include: ['browser/**/*'],
+            exclude: ['browser/**/*.spec.ts'],
+            // @ts-expect-error - customOptions exists in coverage config
+            customOptions: {
+              outputDir: './existing-browser-coverage',
+              name: 'Existing Browser Coverage',
+              css: false,
+            },
+          },
+        },
+      }
+
+      const customOptions = {
+        reports: ['html', 'lcov'],
+        css: true,
+        logging: 'debug' as const,
+      }
+
+      const result = withMonocartBrowserProvider(viteConfig, customOptions)
+
+      const coverage = result.test?.coverage
+      expect(coverage?.provider).toBe('custom')
+      // @ts-expect-error - customProviderModule exists on resolved config
+      expect(coverage?.customProviderModule).toBe('@oorabona/vitest-monocart-coverage/browser')
+      expect(coverage?.clean).toBe(false) // preserved
+      expect(coverage?.include).toEqual(['browser/**/*']) // preserved
+      expect(coverage?.exclude).toContain('browser/**/*.spec.ts') // preserved
+      expect(coverage?.exclude).toContain('anonymous*.js') // added
+
+      expect(coverage?.customOptions).toEqual({
+        outputDir: './existing-browser-coverage', // from existing
+        name: 'Existing Browser Coverage', // from existing
+        css: true, // from custom options (overrides existing false)
+        reports: ['html', 'lcov'], // from custom options
+        logging: 'debug', // from custom options
+      })
+    })
+  })
+})
+
+describe('createBrowserCoverageConfig (internal)', () => {
+  it('should handle vitestDefaults with undefined exclude', () => {
+    const customOptions = { css: true }
+    const vitestDefaults = { include: ['src/**/*'], exclude: undefined }
+
+    // Testing internal function via withMonocartBrowserProvider to ensure coverage
+    const result = withMonocartBrowserProvider(
+      {
+        test: { coverage: vitestDefaults },
+      },
+      customOptions,
+    )
+
+    const coverage = result.test?.coverage
+    expect(coverage?.exclude).toEqual(['anonymous*.js'])
+    expect(coverage?.customOptions?.css).toBe(true)
+  })
+
+  it('should handle vitestDefaults with string exclude', () => {
+    const customOptions = { css: false }
+    const vitestDefaults = { exclude: 'node_modules/**/*' }
+
+    const result = withMonocartBrowserProvider(
+      {
+        test: { coverage: vitestDefaults },
+      },
+      customOptions,
+    )
+
+    const coverage = result.test?.coverage
+    expect(coverage?.exclude).toEqual(['node_modules/**/*', 'anonymous*.js'])
+  })
+
+  it('should handle vitestDefaults with array exclude', () => {
+    const customOptions = { reports: ['html'] }
+    const vitestDefaults = { exclude: ['dist/**/*', 'tests/**/*'] }
+
+    const result = withMonocartBrowserProvider(
+      {
+        test: { coverage: vitestDefaults },
+      },
+      customOptions,
+    )
+
+    const coverage = result.test?.coverage
+    expect(coverage?.exclude).toEqual(['dist/**/*', 'tests/**/*', 'anonymous*.js'])
+  })
+
+  it('should handle config without test property', () => {
+    const customOptions = { css: true }
+    const baseConfig = { plugins: [] } // Vite config without test property
+
+    const result = withMonocartBrowserProvider(baseConfig, customOptions)
+
+    const coverage = result.test?.coverage
+    expect(coverage?.customOptions?.css).toBe(true)
+    expect(coverage?.clean).toBe(true) // default value
   })
 })

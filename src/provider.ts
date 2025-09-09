@@ -7,12 +7,17 @@ import type { AfterSuiteRunMeta } from 'vitest'
 import { BaseCoverageProvider } from 'vitest/coverage'
 import type { CoverageProvider, CoverageProviderModule, ReportContext, Vitest } from 'vitest/node'
 import { resolveMonocartConfig } from './config.js'
+import type { Logger } from './logger.js'
+import { loggerFactory } from './logger.js'
 import { MonocartReporter } from './reporter.js'
 import type {
   MonocartCoverageOptions,
   ResolvedMonocartCoverageOptions,
   ScriptCoverageWithOffset,
 } from './types.js'
+
+// Module-level logger
+// Will be initialized per-resolved config to honor logging level
 
 // RawCoverage is also not exported, so we define a minimal version here
 interface RawCoverage {
@@ -37,6 +42,7 @@ export class MonocartCoverageProvider
   name = 'v8' as const
 
   private reporter?: MonocartReporter
+  private logger: Logger = loggerFactory.getModuleLogger(import.meta.url)
 
   async initialize(ctx: Vitest): Promise<void> {
     // Align version with Vitest to prevent "mixed versions" warning
@@ -47,6 +53,7 @@ export class MonocartCoverageProvider
     this.ctx = ctx
 
     const coverageConfig = ctx.config.coverage
+
     // Extract customOptions from the coverage config (safely typed)
     const customOptions = {
       ...((coverageConfig as { customOptions?: Partial<MonocartCoverageOptions> }).customOptions ||
@@ -54,6 +61,7 @@ export class MonocartCoverageProvider
     }
 
     const resolvedConfig = await resolveMonocartConfig(customOptions, ctx)
+    // Logger level is already set by resolveMonocartConfig via loggerFactory.setLevel()
     this.reporter = await MonocartReporter.create(resolvedConfig)
 
     // Configure Vitest to use V8 engine internally while we handle the reporting
@@ -96,6 +104,16 @@ export class MonocartCoverageProvider
     const coverage = (meta as any).coverage as RawCoverage
 
     try {
+      // Debug logging to understand what we receive
+      this.logger.info(
+        `[provider] onAfterSuiteRun coverage type: ${typeof coverage}, hasResult: ${coverage?.result !== undefined}`,
+      )
+
+      if (!coverage || !coverage.result) {
+        this.logger.warn('[provider] No coverage data available in onAfterSuiteRun')
+        return
+      }
+
       const coverageData = coverage.result
 
       // Get Vite's transform cache containing compiled source and source maps
@@ -143,7 +161,36 @@ export class MonocartCoverageProvider
       // biome-ignore lint/style/noNonNullAssertion: we want it to fail if reporter is not set
       await this.reporter!.addCoverageData(coverageData)
     } catch (error) {
-      console.error('[MonocartProvider] Failed to process coverage in onAfterSuiteRun:', error)
+      this.logger.error(`Failed to process coverage in onAfterSuiteRun: ${error}`)
+    }
+  }
+
+  /**
+   * Generate Monocart reports directly with provided coverage data
+   * This method can be called by browser provider to generate reports
+   */
+  async generateMonocartReports(coverageData: any[]): Promise<void> {
+    if (!this.reporter) {
+      this.logger.warn('[provider] Reporter not initialized for generateMonocartReports')
+      return
+    }
+
+    try {
+      this.logger.info(
+        `[provider] generateMonocartReports: processing ${coverageData.length} coverage entries`,
+      )
+
+      // Add coverage data to reporter and generate reports immediately
+      await this.reporter.addCoverageData(coverageData)
+      await this.reporter.generateReport()
+
+      this.logger.info(
+        '[provider] Monocart reports generated successfully via generateMonocartReports',
+      )
+    } catch (error) {
+      this.logger.error(
+        `[provider] Failed to generate Monocart reports via generateMonocartReports: ${error}`,
+      )
     }
   }
 
@@ -160,7 +207,7 @@ export class MonocartCoverageProvider
     try {
       await this.reporter.generateReport()
     } catch (error) {
-      console.error('[MonocartProvider] Failed to generate final report:', error)
+      this.logger.error(`Failed to generate final report: ${error}`)
     }
   }
 

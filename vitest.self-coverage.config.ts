@@ -7,13 +7,22 @@ export default withMonocartProvider(
       globals: true,
       environment: 'node',
       include: ['tests/**/*.test.ts'],
-      exclude: ['node_modules/', 'dist/', '**/*.d.ts'],
+      exclude: [
+        'node_modules/',
+        'dist/',
+        '**/*.d.ts',
+        'tests/integration/**/*.test.ts',
+        'tests/browser-simple.test.ts',
+        'tests/browser-provider.test.ts',
+        'tests/browser-runtime.test.ts',
+      ],
       testTimeout: 10000,
       hookTimeout: 10000,
       teardownTimeout: 5000,
       isolate: true,
       pool: 'forks',
       coverage: {
+        reportsDirectory: './self-coverage',
         enabled: true,
         include: ['src/**/*'],
         exclude: [
@@ -36,7 +45,7 @@ export default withMonocartProvider(
       },
     },
     esbuild: {
-      target: 'node20',
+      target: 'node21',
     },
   }),
   {

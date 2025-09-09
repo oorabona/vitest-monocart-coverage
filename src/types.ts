@@ -30,6 +30,33 @@ export interface MonocartCoverageOptions {
 }
 
 /**
+ * Browser-specific configuration options for Monocart coverage provider.
+ * Optimized for browser environments with CDP support.
+ */
+export interface MonocartBrowserCoverageOptions {
+  /** Name displayed in coverage reports */
+  name?: string
+  /** Directory where coverage reports will be generated */
+  outputDir?: string
+  /** Array of report formats to generate (e.g., ['v8', 'console', 'html']) */
+  reports?: string[]
+  /** Generate LCOV report format */
+  lcov?: boolean
+  /** Source path mapping for coverage reports */
+  sourcePath?: string
+  /** Filter function to include/exclude files from coverage */
+  sourceFilter?: (sourcePath: string) => boolean
+  /** Clean the cache before generating reports */
+  cleanCache?: boolean
+  /** Logging level for coverage processing */
+  logging?: 'debug' | 'info' | 'warn' | 'error'
+  /** Enable CSS coverage collection via CDP (browser-specific) */
+  css?: boolean
+  /** Callback executed after coverage generation */
+  onEnd?: (coverageResults: unknown) => void | Promise<void>
+}
+
+/**
  * Custom coverage options for the Monocart provider that properly extend Vitest's type system.
  * This interface ensures type safety when using the 'custom' provider with Monocart.
  */
@@ -68,9 +95,22 @@ export interface ResolvedMonocartCoverageOptions extends ResolvedCoverageOptions
   customOptions?: RequiredMonocartCoverageOptions
 }
 
+/**
+ * Browser-specific resolved coverage options for the Monocart provider.
+ */
+export interface ResolvedMonocartBrowserCoverageOptions extends ResolvedCoverageOptions<'v8'> {
+  customOptions?: RequiredMonocartBrowserCoverageOptions
+}
+
 export interface ResolvedMonocartVitestConfig extends ViteUserConfig {
   test: {
     coverage: ResolvedMonocartCoverageOptions
+  }
+}
+
+export interface ResolvedMonocartBrowserVitestConfig extends ViteUserConfig {
+  test: {
+    coverage: ResolvedMonocartBrowserCoverageOptions
   }
 }
 
@@ -101,6 +141,7 @@ export interface MonocartProviderConfig {
 }
 
 export type RequiredMonocartCoverageOptions = Required<MonocartCoverageOptions>
+export type RequiredMonocartBrowserCoverageOptions = Required<MonocartBrowserCoverageOptions>
 
 // ScriptCoverageWithOffset is not exported by Vitest, so we define a minimal version here
 export interface ScriptCoverageWithOffset extends Profiler.ScriptCoverage {

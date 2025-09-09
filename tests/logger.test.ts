@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createLogger, shouldLogAtLevel } from '../src/logger.js'
+import { createLogger, createModuleLogger, LoggerFactory, shouldLogAtLevel } from '../src/logger.js'
 
 describe('Logger', () => {
   describe('shouldLogAtLevel', () => {
@@ -58,6 +58,102 @@ describe('Logger', () => {
       logger.info('This should be logged')
 
       expect(spy).toHaveBeenCalledWith('This should be logged')
+      spy.mockRestore()
+    })
+
+    it('should log without module prefix when moduleName is not provided', () => {
+      const logger = createLogger('info') // No module name
+      const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+      logger.info('Message without prefix')
+
+      expect(spy).toHaveBeenCalledWith('Message without prefix')
+      spy.mockRestore()
+    })
+  })
+
+  describe('createModuleLogger', () => {
+    it('should create module logger with extracted name from file path', () => {
+      const logger = createModuleLogger('info', '/path/to/module.ts')
+      const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+      logger.info('test message')
+
+      expect(spy).toHaveBeenCalledWith('[module] test message')
+      spy.mockRestore()
+    })
+
+    it('should handle javascript extension', () => {
+      const logger = createModuleLogger('debug', '/path/to/file.js')
+      const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+      logger.info('test message')
+
+      expect(spy).toHaveBeenCalledWith('[file] test message')
+      spy.mockRestore()
+    })
+
+    it('should handle path without extension', () => {
+      const logger = createModuleLogger('warn', '/path/to/noextension')
+      const spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      logger.warn('test message')
+
+      expect(spy).toHaveBeenCalledWith('[noextension] test message')
+      spy.mockRestore()
+    })
+
+    it('should handle undefined or empty path', () => {
+      const logger = createModuleLogger('error')
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      logger.error('test message')
+
+      expect(spy).toHaveBeenCalledWith('[unknown] test message')
+      spy.mockRestore()
+    })
+
+    it('should handle file path with no directory', () => {
+      const logger = createModuleLogger('info', 'standalone.ts')
+      const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+      logger.info('test message')
+
+      expect(spy).toHaveBeenCalledWith('[standalone] test message')
+      spy.mockRestore()
+    })
+
+    it('should handle edge case with only extension', () => {
+      const logger = createModuleLogger('info', '.ts')
+      const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+      logger.info('test message')
+
+      // When moduleName is empty string, no prefix is added
+      expect(spy).toHaveBeenCalledWith('test message')
+      spy.mockRestore()
+    })
+  })
+
+  describe('LoggerFactory', () => {
+    it('should update log level for all existing loggers when setLevel is called', () => {
+      const factory = new LoggerFactory()
+
+      // Create a logger with default level
+      const logger = factory.getModuleLogger('test.ts')
+      const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+      // Initially, debug should not be logged (default is 'info')
+      logger.debug('debug message')
+      expect(spy).not.toHaveBeenCalled()
+
+      // Change global level to debug
+      factory.setLevel('debug')
+
+      // Now debug should be logged
+      logger.debug('debug message after setLevel')
+      expect(spy).toHaveBeenCalledWith('[test] debug message after setLevel')
+
       spy.mockRestore()
     })
   })
