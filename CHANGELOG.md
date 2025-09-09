@@ -7,10 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Merge remote-tracking branch 'refs/remotes/origin/main' (d6d76e7)
-- feat: enhance logger functionality with module support and logging levels (410aa2e)
-- feat: implement MonocartBrowserProvider for browser coverage integration and add CSS option validation (bafc4f3)
-- fix: update MonocartReporter to expose config as public and adjust default CSS option in tests (b4c01f4)
+### Added
+- enhance changelog population script to support multiple conventional commit prefixes (87a5f3b)
+- enhance logger functionality with module support and logging levels (
+410aa2)
+- extend provider configuration with browser support (
+410aa2)
+- implement MonocartBrowserProvider for browser coverage integration and add CSS option validation (
+bafc4f)
+
+### Fixed
+- improve error handling and logging in provider tests (
+410aa2)
+- update MonocartReporter to expose config as public and adjust default CSS option in tests (
+b4c01f)
+
+### Changed
+- remove outdated changelog scripts and implement a simplified unreleased population script (
+782d32)
+- Merge remote-tracking branch 'refs/remotes/origin/main' (
+d6d76e)
+- add comprehensive tests for reporter functionality (
+410aa2)
+- update TypeScript configuration for browser compatibility (
+410aa2)
+- refactor build configuration for multiple targets (
+410aa2)
+- add Vitest configuration for browser testing (
+410aa2)
+- update self-coverage configurations for improved reporting (
+410aa2)
 
 ## [v1.2.0] - 2025-09-06
 
