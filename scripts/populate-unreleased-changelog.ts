@@ -24,16 +24,19 @@ function extractConventionalCommitParts(commitBody: string, sha: string): Commit
   const parts: CommitPart[] = [];
   
   // Pattern to match conventional commits: type(optional-scope): description
-  const conventionalCommitRegex = /^(\w+)(?:\(([^)]+)\))?\s*:\s*(.+)$/gm;
+  // Use [^\r\n]+ instead of .+ to exclude line breaks from capture
+  const conventionalCommitRegex = /^(\w+)(?:\(([^)]+)\))?\s*:\s*([^\r\n]+)/gm;
   
   let match;
   while ((match = conventionalCommitRegex.exec(commitBody)) !== null) {
     const [, type, scope, description] = match;
     if (type && description && description.trim()) {
+      // Extra cleanup to ensure no stray characters
+      const cleanDescription = description.trim().replace(/\s+/g, ' ');
       parts.push({
         type: type.trim(),
         scope: scope?.trim(),
-        description: description.trim(),
+        description: cleanDescription,
         sha
       });
     }
@@ -56,7 +59,7 @@ function parseCommitsWithMultiplePrefixes(gitOutput: string): string {
     const body = bodyParts.join("|").trim();
     
     if (sha && body) {
-      const shortSha = sha.substring(0, 7);
+      const shortSha = sha.trim().substring(0, 7);
       const parts = extractConventionalCommitParts(body, shortSha);
       
       if (parts.length === 0) {
@@ -65,7 +68,7 @@ function parseCommitsWithMultiplePrefixes(gitOutput: string): string {
         if (firstLine) {
           allParts.push({
             type: 'misc',
-            description: firstLine,
+            description: firstLine, // Already clean from split()[0].trim()
             sha: shortSha
           });
         }
