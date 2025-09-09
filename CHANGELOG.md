@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- add comprehensive release and CI workflows documentation ([2976511](https://github.com/oorabona/vitest-monocart-coverage/commit/2976511))
+
+### Fixed
+- update vitest peer dependency version constraint to allow newer versions ([3bd83db](https://github.com/oorabona/vitest-monocart-coverage/commit/3bd83db))
+
 ## [2.0.0] - 2025-09-09
 
 ### Added
