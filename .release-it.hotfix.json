@@ -11,8 +11,7 @@
   "hooks": {
     "before:bump": [
       "echo '🚨 Creating hotfix release v${version}'",
-      "pnpm tsx scripts/populate-unreleased.ts",
-      "pnpm tsx scripts/update-changelog.ts ${version}"
+      "pnpm tsx scripts/populate-unreleased-changelog.ts"
     ]
   },
   "github": {

@@ -24,7 +24,7 @@
     "before:init": [
       "echo '⚠️  WARNING: This will MOVE the existing tag v${version} to the current commit!'",
       "echo '⚠️  This breaks semver immutability and should only be used in exceptional cases!'",
-      "pnpm tsx scripts/populate-unreleased.ts",
+      "pnpm tsx scripts/populate-unreleased-changelog.ts",
       "pnpm tsx scripts/republish-changelog.ts"
     ],
     "after:release": "echo '⚠️  IMPORTANT: Tag v${version} has been moved. Users may need to re-fetch tags.'"

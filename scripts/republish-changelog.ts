@@ -1,7 +1,21 @@
 #!/usr/bin/env tsx
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { getRepoUrl } from "./utils/get-repo.js";
+import { execSync } from "node:child_process";
+
+/**
+ * Get GitHub repository URL for commit links
+ */
+function getRepoUrl(): string {
+  try {
+    const remoteUrl = execSync("git config --get remote.origin.url", { encoding: "utf8" }).trim();
+    // Convert git URL to https format and remove .git suffix
+    return remoteUrl.replace(/^git@github\.com:/, "https://github.com/").replace(/\.git$/, "");
+  } catch {
+    // Fallback if git command fails
+    return "https://github.com/oorabona/vitest-monocart-coverage";
+  }
+}
 
 /**
  * Script specialized for republishing an existing version without bumping.
