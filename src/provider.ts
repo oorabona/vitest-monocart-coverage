@@ -5,7 +5,13 @@ import type { ProxifiedModule } from 'magicast'
 import { parseModule } from 'magicast'
 import type { AfterSuiteRunMeta } from 'vitest'
 import { BaseCoverageProvider } from 'vitest/coverage'
-import type { CoverageProvider, CoverageProviderModule, ReportContext, Vitest } from 'vitest/node'
+import type {
+  CoverageProvider,
+  CoverageProviderModule,
+  ReportContext,
+  ResolvedCoverageOptions,
+  Vitest,
+} from 'vitest/node'
 import { resolveMonocartConfig } from './config.js'
 import type { Logger } from './logger.js'
 import { loggerFactory } from './logger.js'
@@ -35,11 +41,11 @@ interface RawCoverage {
  * 4. Passing enriched data to Monocart for processing and report generation
  */
 
-export class MonocartCoverageProvider
-  extends BaseCoverageProvider<ResolvedMonocartCoverageOptions>
-  implements CoverageProvider
-{
+export class MonocartCoverageProvider extends BaseCoverageProvider implements CoverageProvider {
   name = 'v8' as const
+
+  // Narrow the inherited `options` field to our resolved type for type-safe access
+  declare options: ResolvedMonocartCoverageOptions
 
   private reporter?: MonocartReporter
   private logger: Logger = loggerFactory.getModuleLogger(import.meta.url)
@@ -78,7 +84,7 @@ export class MonocartCoverageProvider
     return libCoverage.createCoverageMap({})
   }
 
-  resolveOptions(): ResolvedMonocartCoverageOptions {
+  resolveOptions(): ResolvedCoverageOptions {
     return this.options
   }
 
@@ -100,7 +106,7 @@ export class MonocartCoverageProvider
    * This is where we enrich raw V8 data with source maps and compiled code.
    */
   async onAfterSuiteRun(meta: AfterSuiteRunMeta): Promise<void> {
-    const { transformMode, projectName } = meta
+    const { environment, projectName } = meta
     const coverage = (meta as any).coverage as RawCoverage
 
     try {
@@ -120,9 +126,13 @@ export class MonocartCoverageProvider
       const viteNode =
         (this.ctx as any).projects?.find((project: any) => project.name === projectName)
           ?.vitenode || (this.ctx as any).vitenode
+      // Why: Vitest 4 renamed AfterSuiteRunMeta.transformMode → .environment.
+      // The vite-node internal fetchCaches object uses the same string keys
+      // ('ssr', 'web') that were previously called transformMode values.
+      // We pass `environment` directly as the key — the runtime strings are unchanged.
       const fetchCache =
-        transformMode && viteNode?.fetchCaches
-          ? viteNode.fetchCaches[transformMode]
+        environment && viteNode?.fetchCaches
+          ? viteNode.fetchCaches[environment]
           : viteNode?.fetchCache
       const transformResults = this.normalizeTransformResults(fetchCache)
 

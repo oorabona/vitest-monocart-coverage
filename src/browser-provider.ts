@@ -4,7 +4,7 @@ import type { ProxifiedModule } from 'magicast'
 import { parseModule } from 'magicast'
 import type { AfterSuiteRunMeta } from 'vitest'
 import { BaseCoverageProvider } from 'vitest/coverage'
-import type { CoverageProvider, ReportContext, Vitest } from 'vitest/node'
+import type { CoverageProvider, ReportContext, ResolvedCoverageOptions, Vitest } from 'vitest/node'
 import { resolveMonocartConfig } from './config.js'
 import { loggerFactory } from './logger.js'
 import { MonocartReporter } from './reporter.js'
@@ -33,11 +33,11 @@ import type {
  * 3. Filtering and processing browser-specific file paths
  * 4. Passing enriched data to Monocart for processing and report generation
  */
-export class MonocartBrowserProvider
-  extends BaseCoverageProvider<ResolvedMonocartCoverageOptions>
-  implements CoverageProvider
-{
+export class MonocartBrowserProvider extends BaseCoverageProvider implements CoverageProvider {
   name = 'v8' as const
+
+  // Narrow the inherited `options` field to our resolved type for type-safe access
+  declare options: ResolvedMonocartCoverageOptions
 
   private reporter?: MonocartReporter
   private addQueue: Promise<void> = Promise.resolve()
@@ -77,7 +77,7 @@ export class MonocartBrowserProvider
     return libCoverage.createCoverageMap({})
   }
 
-  resolveOptions(): ResolvedMonocartCoverageOptions {
+  resolveOptions(): ResolvedCoverageOptions {
     return this.options
   }
 

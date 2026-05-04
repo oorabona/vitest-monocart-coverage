@@ -36,9 +36,11 @@ export default defineConfig({
       'node_modules/',
       'dist/',
       '**/*.d.ts',
+      // Integration tests use Playwright runner: pnpm test:integration
       'tests/integration/**/*.test.ts',
+      // browser-simple.test.ts requires Vitest browser mode: pnpm test:browser:coverage
       'tests/browser-simple.test.ts',
-      'tests/browser-provider.test.ts',
+      // browser-runtime.test.ts uses window.location which requires browser env; run via pnpm test:browser:coverage
       'tests/browser-runtime.test.ts',
     ],
     testTimeout: 10000,

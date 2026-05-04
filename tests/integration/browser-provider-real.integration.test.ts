@@ -1,4 +1,15 @@
+/// <reference lib="dom" />
 import { expect, test } from '@playwright/test'
+
+declare global {
+  interface Window {
+    __cdp_client: {
+      send: (method: string, params?: unknown) => Promise<unknown>
+      on: (event: string, callback: (...args: unknown[]) => void) => void
+    }
+    __playwright_cdp_send: (method: string, params?: unknown) => Promise<unknown>
+  }
+}
 
 test.describe('Browser Provider Real CDP Integration', () => {
   test('should work with real Chrome DevTools Protocol', async ({ page }) => {
@@ -93,10 +104,10 @@ test.describe('Browser Provider Real CDP Integration', () => {
     // After page loads, expose the CDP client
     await page.evaluate(_cdpMethods => {
       window.__cdp_client = {
-        send: async (method, params) => {
+        send: async (method: string, params?: unknown) => {
           return await window.__playwright_cdp_send(method, params)
         },
-        on: (event, _callback) => {
+        on: (event: string, _callback: (...args: unknown[]) => void) => {
           console.log('CDP event listener added for:', event)
         },
       }
@@ -111,7 +122,7 @@ test.describe('Browser Provider Real CDP Integration', () => {
         return result
       } catch (error) {
         console.warn('CDP method failed:', method, error)
-        return { error: error.message }
+        return { error: error instanceof Error ? error.message : String(error) }
       }
     })
 
@@ -121,16 +132,16 @@ test.describe('Browser Provider Real CDP Integration', () => {
         // Mock the browser provider instead of importing
         const mockProvider = {
           name: 'MonocartBrowserProvider',
-          initialize: async ctx => {
+          initialize: async (ctx: any) => {
             console.log('Real CDP provider initialized:', ctx.config.coverage)
             return true
           },
-          onAfterSuiteRun: async meta => {
+          onAfterSuiteRun: async (meta: any) => {
             console.log('Real CDP provider suite run completed:', meta.projectName)
             return true
           },
           reporter: {
-            addCoverageData: data => {
+            addCoverageData: (data: any) => {
               console.log('Real CDP coverage data added:', data.length)
               return true
             },
@@ -157,12 +168,12 @@ test.describe('Browser Provider Real CDP Integration', () => {
         await mockProvider.initialize(mockCtx)
 
         // Create a mock reporter to capture data
-        const capturedCoverageData = []
+        const capturedCoverageData: unknown[] = []
 
         // Run the coverage collection
         await mockProvider.onAfterSuiteRun({
           coverage: null,
-          transformMode: 'ssr',
+          environment: 'ssr',
           projectName: 'real-cdp-test',
           testFiles: [],
         })
@@ -176,8 +187,8 @@ test.describe('Browser Provider Real CDP Integration', () => {
       } catch (error) {
         return {
           success: false,
-          error: error.message,
-          stack: error.stack,
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
         }
       }
     })
@@ -205,7 +216,7 @@ test.describe('Browser Provider Real CDP Integration', () => {
     expect(styles.padding).toMatch(/15px/)
 
     // Test that real CDP methods were attempted
-    const consoleLogs = []
+    const consoleLogs: string[] = []
     page.on('console', msg => {
       if (msg.text().includes('Real CDP') || msg.text().includes('CDP')) {
         consoleLogs.push(msg.text())

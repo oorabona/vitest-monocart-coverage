@@ -13,7 +13,6 @@ describe('withMonocartProvider', () => {
       const result = withMonocartProvider()
 
       expect(result.provider).toBe('custom')
-      // @ts-expect-error - customProviderModule exists on resolved config
       expect(result.customProviderModule).toBe('@oorabona/vitest-monocart-coverage')
       expect(result.clean).toBe(true)
       expect(result.include).toEqual(['src/**/*'])
@@ -80,15 +79,13 @@ describe('withMonocartProvider', () => {
   describe('full-config mode', () => {
     it('should merge with empty Vite config', () => {
       const viteConfig: ViteUserConfig = {}
-      const result = withMonocartProvider(viteConfig)
+      // Empty config (no test/plugins/build/server) is treated as options-only mode by isViteConfig
+      const result = withMonocartProvider(
+        viteConfig,
+      ) as unknown as import('../src/types.js').ResolvedMonocartCoverageOptions
 
-      // Empty config should be treated as options-only mode according to the logic
-      // @ts-expect-error - provider exists on resolved config
       expect(result.provider).toBe('custom')
-      // @ts-expect-error - customProviderModule exists on resolved config
       expect(result.customProviderModule).toBe('@oorabona/vitest-monocart-coverage')
-      // @ts-expect-error - enabled exists on resolved config
-      // @ts-expect-error - clean exists on resolved config
       expect(result.clean).toBe(true)
     })
 
@@ -123,8 +120,6 @@ describe('withMonocartProvider', () => {
             clean: false,
             include: ['lib/**/*'],
             exclude: ['lib/**/*.spec.ts'],
-            extension: ['.ts', '.js'],
-            all: true,
             cleanOnRerun: true,
             thresholds: {
               lines: 80,
@@ -136,12 +131,12 @@ describe('withMonocartProvider', () => {
             allowExternal: true,
             processingConcurrency: 4,
             reporter: ['text', 'json'],
-            // @ts-expect-error - customOptions exists in coverage config
+            // customOptions is our extension to CoverageOptions, not in Vitest 4 types
             customOptions: {
               outputDir: './existing-coverage',
               name: 'Existing Coverage',
             },
-          },
+          } as any,
         },
       }
 
@@ -154,13 +149,10 @@ describe('withMonocartProvider', () => {
 
       const coverage = result.test?.coverage
       expect(coverage?.provider).toBe('custom')
-      // @ts-expect-error - customProviderModule exists on resolved config
       expect(coverage?.customProviderModule).toBe('@oorabona/vitest-monocart-coverage')
       expect(coverage?.clean).toBe(false) // preserved
       expect(coverage?.include).toEqual(['lib/**/*']) // preserved
       expect(coverage?.exclude).toEqual(['lib/**/*.spec.ts']) // preserved
-      expect(coverage?.extension).toEqual(['.ts', '.js']) // preserved
-      expect(coverage?.all).toBe(true) // preserved
       expect(coverage?.cleanOnRerun).toBe(true) // preserved
       expect(coverage?.thresholds).toEqual({
         lines: 80,
@@ -371,7 +363,6 @@ describe('createMonocartConfig', () => {
     const result = createMonocartConfig(customOptions)
 
     expect(result.provider).toBe('custom')
-    // @ts-expect-error - customProviderModule exists on resolved config
     expect(result.customProviderModule).toBe('@oorabona/vitest-monocart-coverage')
     expect(result.clean).toBe(true)
     expect(result.include).toEqual(['src/**/*'])
@@ -495,7 +486,6 @@ describe('withMonocartBrowserProvider', () => {
       const result = withMonocartBrowserProvider()
 
       expect(result.provider).toBe('custom')
-      // @ts-expect-error - customProviderModule exists on resolved config
       expect(result.customProviderModule).toBe('@oorabona/vitest-monocart-coverage/browser')
       expect(result.clean).toBe(true)
       expect(result.exclude).toContain('anonymous*.js')
@@ -531,11 +521,12 @@ describe('withMonocartBrowserProvider', () => {
   describe('full-config mode', () => {
     it('should merge with empty Vite config', () => {
       const viteConfig: ViteUserConfig = {}
-      const result = withMonocartBrowserProvider(viteConfig)
+      // Empty config (no test/plugins/build/server) is treated as options-only mode by isViteConfig
+      const result = withMonocartBrowserProvider(
+        viteConfig,
+      ) as unknown as import('../src/types.js').ResolvedMonocartBrowserCoverageOptions
 
-      // Empty config should be treated as options-only mode
       expect(result.provider).toBe('custom')
-      // @ts-expect-error - customProviderModule exists on resolved config
       expect(result.customProviderModule).toBe('@oorabona/vitest-monocart-coverage/browser')
       expect(result.clean).toBe(true)
       expect(result.exclude).toContain('anonymous*.js')
@@ -547,7 +538,7 @@ describe('withMonocartBrowserProvider', () => {
           globals: true,
           browser: {
             enabled: true,
-            provider: 'playwright',
+            provider: 'playwright' as any,
           },
         },
       }
@@ -564,7 +555,6 @@ describe('withMonocartBrowserProvider', () => {
       // @ts-expect-error - browser exists on test config
       expect(result.test?.browser?.enabled).toBe(true)
       expect(result.test?.coverage?.provider).toBe('custom')
-      // @ts-expect-error - customProviderModule exists on resolved config
       expect(result.test?.coverage?.customProviderModule).toBe(
         '@oorabona/vitest-monocart-coverage/browser',
       )
@@ -584,13 +574,13 @@ describe('withMonocartBrowserProvider', () => {
             clean: false,
             include: ['browser/**/*'],
             exclude: ['browser/**/*.spec.ts'],
-            // @ts-expect-error - customOptions exists in coverage config
+            // customOptions is our extension to CoverageOptions, not in Vitest 4 types
             customOptions: {
               outputDir: './existing-browser-coverage',
               name: 'Existing Browser Coverage',
               css: false,
             },
-          },
+          } as any,
         },
       }
 
@@ -604,7 +594,6 @@ describe('withMonocartBrowserProvider', () => {
 
       const coverage = result.test?.coverage
       expect(coverage?.provider).toBe('custom')
-      // @ts-expect-error - customProviderModule exists on resolved config
       expect(coverage?.customProviderModule).toBe('@oorabona/vitest-monocart-coverage/browser')
       expect(coverage?.clean).toBe(false) // preserved
       expect(coverage?.include).toEqual(['browser/**/*']) // preserved
@@ -625,7 +614,7 @@ describe('withMonocartBrowserProvider', () => {
 describe('createBrowserCoverageConfig (internal)', () => {
   it('should handle vitestDefaults with undefined exclude', () => {
     const customOptions = { css: true }
-    const vitestDefaults = { include: ['src/**/*'], exclude: undefined }
+    const vitestDefaults = { include: ['src/**/*'] }
 
     // Testing internal function via withMonocartBrowserProvider to ensure coverage
     const result = withMonocartBrowserProvider(
@@ -642,7 +631,8 @@ describe('createBrowserCoverageConfig (internal)', () => {
 
   it('should handle vitestDefaults with string exclude', () => {
     const customOptions = { css: false }
-    const vitestDefaults = { exclude: 'node_modules/**/*' }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const vitestDefaults = { exclude: 'node_modules/**/*' as any }
 
     const result = withMonocartBrowserProvider(
       {

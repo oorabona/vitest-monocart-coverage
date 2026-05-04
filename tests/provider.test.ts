@@ -1,5 +1,5 @@
-import type { ResolvedCoverageOptions, Vitest } from 'vitest'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { ResolvedCoverageOptions, Vitest } from 'vitest/node'
 import { MonocartCoverageProvider, MonocartCoverageProviderModule } from '../src/provider.js'
 
 // Mock the reporter and config modules
@@ -26,19 +26,22 @@ describe('MonocartCoverageProvider', () => {
 
   beforeEach(() => {
     provider = new MonocartCoverageProvider()
+    const coverageConfig = {
+      provider: 'custom',
+      customProviderModule: '@oorabona/vitest-monocart-coverage',
+      customOptions: {
+        name: 'Test Coverage',
+        outputDir: './test-coverage',
+      },
+      clean: true,
+    } as unknown as ResolvedCoverageOptions
     mockCtx = {
       config: {
-        coverage: {
-          provider: 'custom',
-          customProviderModule: '@oorabona/vitest-monocart-coverage',
-          customOptions: {
-            name: 'Test Coverage',
-            outputDir: './test-coverage',
-          },
-          clean: true,
-          // @ts-expect-error - 'monocart' is our custom provider name
-        } as unknown as ResolvedCoverageOptions<'monocart'>,
+        root: '/tmp',
+        coverage: coverageConfig,
       },
+      // Vitest 4: _coverageOptions is a getter on the Vitest class; plain mock needs it explicitly
+      _coverageOptions: coverageConfig,
       logger: {
         warn: vi.fn(),
         error: vi.fn(),
@@ -49,7 +52,7 @@ describe('MonocartCoverageProvider', () => {
   })
 
   it('should have correct provider name', () => {
-    // Our provider internally uses 'v8' since it extends BaseCoverageProvider<v8>
+    // Our provider internally uses 'v8' since it extends BaseCoverageProvider
     // but is configured as 'custom' by Vitest
     expect(provider.name).toBe('v8')
   })
@@ -135,14 +138,18 @@ describe('MonocartCoverageProvider', () => {
   })
 
   it('should handle initialization without customOptions', () => {
+    const coverageConfigWithoutCustom = {
+      provider: 'custom',
+      customProviderModule: '@oorabona/vitest-monocart-coverage',
+      // No customOptions property to test the || {} fallback
+    } as unknown as ResolvedCoverageOptions
     const mockCtxWithoutCustom: Partial<Vitest> = {
       config: {
-        coverage: {
-          provider: 'custom',
-          customProviderModule: '@oorabona/vitest-monocart-coverage',
-          // No customOptions property to test the || {} fallback
-        } as ResolvedCoverageOptions<'custom'>,
+        root: '/tmp',
+        coverage: coverageConfigWithoutCustom,
       },
+      // Vitest 4: _coverageOptions is a getter on the Vitest class; plain mock needs it explicitly
+      _coverageOptions: coverageConfigWithoutCustom,
       logger: {
         warn: vi.fn(),
         error: vi.fn(),
@@ -165,7 +172,7 @@ describe('MonocartCoverageProvider', () => {
     it('should handle missing coverage.result', async () => {
       const meta = {
         coverage: null,
-        transformMode: 'ssr' as 'ssr',
+        environment: 'ssr',
         projectName: 'test',
         testFiles: [],
       }
@@ -176,7 +183,7 @@ describe('MonocartCoverageProvider', () => {
     it('should handle missing coverage object', async () => {
       const meta = {
         coverage: { result: null },
-        transformMode: 'ssr' as 'ssr',
+        environment: 'ssr',
         projectName: 'test',
         testFiles: [],
       }
@@ -203,7 +210,7 @@ describe('MonocartCoverageProvider', () => {
             },
           ],
         },
-        transformMode: 'ssr' as 'ssr',
+        environment: 'ssr',
         projectName: 'test',
         testFiles: [],
       }
@@ -259,7 +266,7 @@ describe('MonocartCoverageProvider', () => {
             },
           ],
         },
-        transformMode: 'ssr' as 'ssr',
+        environment: 'ssr',
         projectName: 'test',
         testFiles: [],
       }
@@ -304,7 +311,7 @@ describe('MonocartCoverageProvider', () => {
             },
           ],
         },
-        transformMode: 'ssr' as 'ssr',
+        environment: 'ssr',
         projectName: 'test',
         testFiles: [],
       }
@@ -340,7 +347,7 @@ describe('MonocartCoverageProvider', () => {
             },
           ],
         },
-        transformMode: 'ssr' as 'ssr',
+        environment: 'ssr',
         projectName: 'test',
         testFiles: [],
       }
@@ -377,7 +384,7 @@ describe('MonocartCoverageProvider', () => {
             },
           ],
         },
-        transformMode: 'ssr' as 'ssr',
+        environment: 'ssr',
         projectName: 'test',
         testFiles: [],
       }
@@ -418,7 +425,7 @@ describe('MonocartCoverageProvider', () => {
             },
           ],
         },
-        transformMode: 'ssr' as 'ssr',
+        environment: 'ssr',
         projectName: 'test',
         testFiles: [],
       }

@@ -12,6 +12,8 @@
     // "inlineSourceMap": true,
     "removeComments": false,
     // "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
     "baseUrl": ".",
     "paths": {
       "@oorabona/vitest-monocart-coverage": ["src/index.ts"],

@@ -1,8 +1,17 @@
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+/// <reference lib="dom" />
 import { expect, test } from '@playwright/test'
-import { injectBrowserProvider } from './helpers/browser-provider-inline'
+import { injectBrowserProvider } from './helpers/browser-provider-inline.js'
+
+declare global {
+  interface Window {
+    __test_results: unknown
+    __test_coverage_results: unknown
+    __url_filter_results: unknown
+  }
+}
 
 test.describe('CSS Coverage Integration Tests', () => {
   let tempDir: string
@@ -242,7 +251,7 @@ test.describe('CSS Coverage Integration Tests', () => {
     // Simulate suite run that triggers coverage collection
     await mockProvider.onAfterSuiteRun({
       coverage: null,
-      transformMode: 'ssr',
+      environment: 'ssr',
       projectName: 'test',
       testFiles: []
     })
@@ -399,7 +408,7 @@ test.describe('CSS Coverage Integration Tests', () => {
     await mockProvider.initialize(mockCtx)
     await mockProvider.onAfterSuiteRun({
       coverage: null,
-      transformMode: 'ssr', 
+      environment: 'ssr', 
       projectName: 'test',
       testFiles: []
     })

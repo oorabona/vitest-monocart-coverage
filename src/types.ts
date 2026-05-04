@@ -1,5 +1,5 @@
 import type { Profiler } from 'node:inspector/promises'
-import type { ViteUserConfig } from 'vitest/dist/config.js'
+import type { UserConfig as ViteUserConfig } from 'vite'
 import type { ResolvedCoverageOptions } from 'vitest/node'
 
 /**
@@ -91,14 +91,14 @@ export interface MonocartBrowserCoverageOptions {
  * Resolved coverage options for the Monocart provider with all required fields populated.
  * Since we use V8 internally, we extend the V8 resolved options and add our custom config.
  */
-export interface ResolvedMonocartCoverageOptions extends ResolvedCoverageOptions<'v8'> {
+export interface ResolvedMonocartCoverageOptions extends ResolvedCoverageOptions {
   customOptions?: RequiredMonocartCoverageOptions
 }
 
 /**
  * Browser-specific resolved coverage options for the Monocart provider.
  */
-export interface ResolvedMonocartBrowserCoverageOptions extends ResolvedCoverageOptions<'v8'> {
+export interface ResolvedMonocartBrowserCoverageOptions extends ResolvedCoverageOptions {
   customOptions?: RequiredMonocartBrowserCoverageOptions
 }
 

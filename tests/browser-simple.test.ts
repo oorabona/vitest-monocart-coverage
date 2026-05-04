@@ -303,13 +303,15 @@ describe('DOMHelper', () => {
 
 describe('AsyncDataLoader', () => {
   let loader: AsyncDataLoader
+  let mockFetch: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     loader = new AsyncDataLoader()
 
     // Mock fetch for browser environment
+    mockFetch = vi.fn()
     Object.defineProperty(globalThis, 'fetch', {
-      value: vi.fn(),
+      value: mockFetch,
       writable: true,
       configurable: true,
     })
@@ -317,7 +319,7 @@ describe('AsyncDataLoader', () => {
 
   test('should load and cache data', async () => {
     const mockData = { id: 1, name: 'test' }
-    fetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve(mockData),
     })
@@ -330,7 +332,7 @@ describe('AsyncDataLoader', () => {
 
   test('should return cached data on subsequent calls', async () => {
     const mockData = { id: 1, name: 'test' }
-    fetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve(mockData),
     })
@@ -342,19 +344,19 @@ describe('AsyncDataLoader', () => {
 
     expect(result1).toEqual(mockData)
     expect(result2).toEqual(mockData)
-    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(mockFetch).toHaveBeenCalledTimes(1)
   })
 
   test('should deduplicate concurrent requests', async () => {
     const mockData = { id: 1, name: 'concurrent' }
 
     // Mock fetch with a promise that we can resolve later
-    let resolvePromise: (value: any) => void
+    let resolvePromise!: (value: any) => void
     const fetchPromise = new Promise(resolve => {
       resolvePromise = resolve
     })
 
-    fetch.mockReturnValueOnce(fetchPromise)
+    mockFetch.mockReturnValueOnce(fetchPromise)
 
     // Make two concurrent calls - should reuse the same loading promise
     const promise1 = loader.loadData('/api/concurrent')
@@ -370,14 +372,14 @@ describe('AsyncDataLoader', () => {
 
     expect(result1).toEqual(mockData)
     expect(result2).toEqual(mockData)
-    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(mockFetch).toHaveBeenCalledTimes(1)
 
     // Both calls should return the same result (deduplication worked)
     expect(loader.isCached('/api/concurrent')).toBe(true)
   })
 
   test('should handle HTTP errors', async () => {
-    fetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 404,
       statusText: 'Not Found',
@@ -388,7 +390,7 @@ describe('AsyncDataLoader', () => {
 
   test('should clear cache', async () => {
     const mockData = { id: 1, name: 'test' }
-    fetch.mockResolvedValue({
+    mockFetch.mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(mockData),
     })
