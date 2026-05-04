@@ -1,4 +1,4 @@
-# @oorabana/vitest-monocart-coverage
+# @oorabona/vitest-monocart-coverage
 
 [![npm version](https://badge.fury.io/js/@oorabona%2Fvitest-monocart-coverage.svg)](https://badge.fury.io/js/@oorabona%2Fvitest-monocart-coverage)
 [![CI](https://github.com/oorabona/vitest-monocart-coverage/actions/workflows/ci.yml/badge.svg)](https://github.com/oorabona/vitest-monocart-coverage/actions/workflows/ci.yml)
@@ -24,6 +24,24 @@ Architecturally speaking, it is not a full stack coverage provider but instead i
 - 🎨 **Auto-Discovery**: Automatically inherits Vitest's include/exclude patterns
 - 🌐 **Browser Mode Support**: Works with @vitest/browser for frontend code coverage
 - 🎨 **CSS Coverage**: Collect CSS coverage in browser environments
+
+## Self-Coverage (Dogfooding)
+
+This package validates its own implementation by running its Monocart-based provider on itself. Coverage thresholds are enforced in CI:
+
+| Command | Reporter | Threshold |
+|---|---|---|
+| `pnpm test:coverage` | V8 native | ≥ 90% |
+| `pnpm test:coverage:self:prod` | Monocart self-coverage | ≥ 90% |
+
+The actual achieved coverage exceeds the threshold (verified on every CI run). Run locally:
+
+```bash
+pnpm test:coverage          # V8 provider, fast feedback
+pnpm test:coverage:self:prod # Monocart self-coverage with HTML + lcov + console-details reports
+```
+
+Public dashboards: see the [![codecov](https://codecov.io/gh/oorabona/vitest-monocart-coverage/branch/main/graph/badge.svg)](https://codecov.io/gh/oorabona/vitest-monocart-coverage) badge above for live metrics tracked per commit on `main`.
 
 ## Why Choose Monocart over V8 Default?
 
@@ -92,7 +110,7 @@ This approach serves 95% of use cases excellently while keeping the codebase mai
 ## Installation
 
 ```bash
-npm install @oorabana/vitest-monocart-coverage
+npm install @oorabona/vitest-monocart-coverage
 ```
 
 ## Quick Start
@@ -101,7 +119,7 @@ Add the provider to your `vitest.config.ts`:
 
 ```ts
 import { defineConfig } from 'vitest/config'
-import { withMonocartProvider } from '@oorabana/vitest-monocart-coverage'
+import { withMonocartProvider } from '@oorabona/vitest-monocart-coverage'
 
 export default defineConfig({
   test: {
@@ -127,7 +145,7 @@ Use the default import for Node.js tests (unit tests, API tests, etc.):
 
 ```ts
 import { defineConfig } from 'vitest/config'
-import { withMonocartProvider } from '@oorabana/vitest-monocart-coverage'
+import { withMonocartProvider } from '@oorabona/vitest-monocart-coverage'
 
 export default defineConfig({
   test: {
@@ -147,7 +165,7 @@ Use the browser import for frontend tests with @vitest/browser:
 
 ```ts
 import { defineConfig } from 'vitest/config'
-import { withMonocartProvider } from '@oorabana/vitest-monocart-coverage'
+import { withMonocartProvider } from '@oorabona/vitest-monocart-coverage'
 
 export default defineConfig({
   test: {
@@ -159,7 +177,7 @@ export default defineConfig({
     },
     coverage: {
       provider: 'custom',
-      customProviderModule: '@oorabana/vitest-monocart-coverage/browser',
+      customProviderModule: '@oorabona/vitest-monocart-coverage/browser',
       customOptions: {
         outputDir: './coverage-browser',
         reports: ['html', 'console-details', 'lcov'],
@@ -178,7 +196,7 @@ For projects with both Node.js and browser code, you can use separate configurat
 ```ts
 // vitest.config.ts - Node.js tests
 import { defineConfig } from 'vitest/config'
-import { withMonocartProvider } from '@oorabana/vitest-monocart-coverage'
+import { withMonocartProvider } from '@oorabona/vitest-monocart-coverage'
 
 export default defineConfig({
   test: {
@@ -206,7 +224,7 @@ export default defineConfig({
     },
     coverage: {
       provider: 'custom',
-      customProviderModule: '@oorabana/vitest-monocart-coverage/browser',
+      customProviderModule: '@oorabona/vitest-monocart-coverage/browser',
       customOptions: {
         outputDir: './coverage-browser',
         name: 'Client Coverage',
@@ -385,7 +403,7 @@ This ensures seamless integration with your existing Vitest setup while providin
 
 | Feature | Node.js Mode | Browser Mode |
 |---------|-------------|--------------|
-| **Import** | `@oorabana/vitest-monocart-coverage` | `@oorabana/vitest-monocart-coverage/browser` |
+| **Import** | `@oorabona/vitest-monocart-coverage` | `@oorabona/vitest-monocart-coverage/browser` |
 | **Environment** | Node.js V8 engine | Chromium browser via CDP |
 | **CSS Coverage** | ❌ Not available | ✅ Available with `css: true` |
 | **Dependencies** | None | Requires `@vitest/browser` + `playwright`/`webdriverio` |
@@ -409,7 +427,7 @@ export default defineConfig({
     browser: { enabled: true, provider: 'playwright' },
     coverage: {
       provider: 'custom',
-      customProviderModule: '@oorabana/vitest-monocart-coverage/browser',
+      customProviderModule: '@oorabona/vitest-monocart-coverage/browser',
       customOptions: { css: true }, // ✅ Works in browser mode
     },
   },
