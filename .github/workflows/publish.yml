@@ -9,7 +9,6 @@ name: Publish
 permissions:
   contents: write
   id-token: write
-  actions: read
 
 on:
   workflow_dispatch:
@@ -51,22 +50,16 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Download dist artifact
-        uses: dawidd6/action-download-artifact@v6
-        with:
-          workflow: ci.yml
-          commit: ${{ github.event.inputs.commit_sha || github.sha }}
-          name: dist-${{ github.event.inputs.commit_sha || github.sha }}
-          path: ./dist
-          workflow_conclusion: success
+      - name: Build dist
+        run: pnpm build
 
-      - name: Verify dist artifact
+      - name: Verify dist
         run: |
           if [ ! -f "./dist/index.js" ]; then
-            echo "Error: dist/index.js not found in artifact."
+            echo "Error: dist/index.js not found after build."
             exit 1
           fi
-          echo "dist artifact is valid."
+          echo "dist build is valid."
 
       - name: Configure Git
         run: |
