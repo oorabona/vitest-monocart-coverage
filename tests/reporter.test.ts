@@ -528,8 +528,10 @@ describe('MonocartReporter sourceFilter normalization', () => {
 
   it('should return true when sourceFilter is undefined', async () => {
     // Build config without sourceFilter to test the undefined fallback (sourceFilter?.() ?? true)
-    const { sourceFilter: _unused, ...rest } = createFullConfig({})
-    const config = rest as RequiredMonocartCoverageOptions
+    const { sourceFilter: _sf, ...rest } = createFullConfig({})
+    const config = { ...rest, sourceFilter: undefined } as RequiredMonocartCoverageOptions & {
+      sourceFilter: undefined
+    }
 
     const reporter = await MonocartReporter.create(config)
     const normalizedFilter = (reporter as any).createNormalizedSourceFilter()

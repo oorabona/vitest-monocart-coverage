@@ -77,7 +77,7 @@ describe('withMonocartProvider', () => {
   })
 
   describe('full-config mode', () => {
-    it('should merge with empty Vite config', () => {
+    it('should treat empty object as options-only mode', () => {
       const viteConfig: ViteUserConfig = {}
       // Empty config (no test/plugins/build/server) is treated as options-only mode by isViteConfig
       const result = withMonocartProvider(
@@ -631,7 +631,6 @@ describe('createBrowserCoverageConfig (internal)', () => {
 
   it('should handle vitestDefaults with string exclude', () => {
     const customOptions = { css: false }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const vitestDefaults = { exclude: 'node_modules/**/*' as any }
 
     const result = withMonocartBrowserProvider(
