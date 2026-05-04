@@ -8,12 +8,12 @@ This project creates a custom Vitest coverage plugin that connects Vitest to Mon
 
 ## Development Commands
 
-- `pnpm format` - Format code with Biome
-- `pnpm lint:check` - Run linting checks with Biome
+- `pnpm check:fix` - Format and auto-fix with Biome
+- `pnpm check` - Run lint + format checks with Biome
 - `pnpm test` - Run tests with Vitest
 - `pnpm build` - Build the project with tsup
-- `pnpm tsx scripts/update-changelog.ts <version>` - Update changelog for release
-- `pnpm tsx scripts/extract-changelog.ts <version>` - Extract changelog for release
+- `pnpm release-it-preset update` - Update changelog for release
+- `node node_modules/@oorabona/release-it-preset/dist/scripts/extract-changelog.js <version>` - Extract changelog for release
 
 ## Code Architecture
 
@@ -150,4 +150,4 @@ The following stderr messages during testing are **normal and expected**:
 - `pnpm exec vitest run --config vitest.self-coverage.config.ts` - Self-coverage analysis
 - `pnpm coverage` - Standard coverage with V8 provider
 - `pnpm test:coverage:self` - Self-dogfooding with Monocart provider
-- `pnpm lint:check && pnpm typecheck` - Full code quality validation
+- `pnpm check && pnpm typecheck` - Full code quality validation

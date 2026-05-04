@@ -1,7 +1,7 @@
+/// <reference lib="dom" />
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-/// <reference lib="dom" />
 import { expect, test } from '@playwright/test'
 import { injectBrowserProvider } from './helpers/browser-provider-inline.js'
 

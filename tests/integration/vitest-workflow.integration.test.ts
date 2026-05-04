@@ -36,8 +36,8 @@ test.describe('Vitest Workflow Integration Tests', () => {
         '@oorabona/vitest-monocart-coverage': `file:${process.cwd()}`,
       },
       devDependencies: {
-        vitest: '^3.0.0',
-        '@vitest/browser': '^3.0.0',
+        vitest: '^4.1.5',
+        '@vitest/browser': '^4.1.5',
         playwright: '^1.55.0',
       },
     }
