@@ -1,0 +1,76 @@
+name: Publish
+# Standard release workflow for publishing to npm via OIDC trusted publishing.
+# Triggered manually after CI passes on main.
+# For other release types, see:
+#   - retry-publish.yml: Republish existing versions to npm/GitHub
+#   - hotfix.yml: Create urgent patch releases
+#   - republish.yml: Exceptional republish (tag movement)
+
+permissions:
+  contents: write
+  id-token: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Semver increment (patch, minor, major, prerelease)'
+        type: choice
+        default: patch
+        options: [patch, minor, major, prerelease]
+      preid:
+        description: 'Pre-release identifier (e.g., rc, beta)'
+        type: string
+        required: false
+      commit_sha:
+        description: 'Commit SHA to release (defaults to HEAD of main)'
+        type: string
+        required: false
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    name: Release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.commit_sha || 'main' }}
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+          registry-url: https://registry.npmjs.org/
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build dist
+        run: pnpm build
+
+      - name: Verify dist
+        run: |
+          if [ ! -f "./dist/index.js" ]; then
+            echo "Error: dist/index.js not found after build."
+            exit 1
+          fi
+          echo "dist build is valid."
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Run release-it with changelog update
+        run: |
+          pnpm release-it --ci \
+            --increment ${{ github.event.inputs.release_type || 'patch' }} \
+            ${{ github.event.inputs.preid && format('--preRelease {0}', github.event.inputs.preid) || '' }} \
+            ${{ github.event.inputs.commit_sha && '--git.requireBranch=' || '' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
