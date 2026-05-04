@@ -4,13 +4,13 @@ import type { ProxifiedModule } from 'magicast'
 import { parseModule } from 'magicast'
 import type { AfterSuiteRunMeta } from 'vitest'
 import { BaseCoverageProvider } from 'vitest/coverage'
-import type { CoverageProvider, ReportContext, ResolvedCoverageOptions, Vitest } from 'vitest/node'
+import type { CoverageProvider, ReportContext, Vitest } from 'vitest/node'
 import { resolveMonocartConfig } from './config.js'
 import { loggerFactory } from './logger.js'
 import { MonocartReporter } from './reporter.js'
 import type {
   MonocartCoverageOptions,
-  ResolvedMonocartCoverageOptions,
+  ResolvedMonocartBrowserCoverageOptions,
   ScriptCoverageWithOffset,
 } from './types.js'
 
@@ -37,7 +37,7 @@ export class MonocartBrowserProvider extends BaseCoverageProvider implements Cov
   name = 'v8' as const
 
   // Narrow the inherited `options` field to our resolved type for type-safe access
-  declare options: ResolvedMonocartCoverageOptions
+  declare options: ResolvedMonocartBrowserCoverageOptions
 
   private reporter?: MonocartReporter
   private addQueue: Promise<void> = Promise.resolve()
@@ -70,14 +70,14 @@ export class MonocartBrowserProvider extends BaseCoverageProvider implements Cov
     this.options = {
       ...coverageConfig,
       reporter: [], // Disable built-in reporters
-    } as ResolvedMonocartCoverageOptions
+    } as ResolvedMonocartBrowserCoverageOptions
   }
 
   createCoverageMap(): CoverageMap {
     return libCoverage.createCoverageMap({})
   }
 
-  resolveOptions(): ResolvedCoverageOptions {
+  resolveOptions(): ResolvedMonocartBrowserCoverageOptions {
     return this.options
   }
 

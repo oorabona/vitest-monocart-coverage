@@ -19,7 +19,7 @@ This project creates a custom Vitest coverage plugin that connects Vitest to Mon
 
 ### Build Configuration
 - **tsup.config.ts**: Builds both CommonJS and ESM formats from `src/index.ts`
-- **Target**: Node.js 20+
+- **Target**: Node.js 20.19+
 - **External dependencies**: `vitest`, `monocart-coverage-reports`
 - **Output**: `dist/` directory with conditional source maps (dev-only) and TypeScript declarations
 - **Production**: `pnpm build` - No source maps (362KB package)

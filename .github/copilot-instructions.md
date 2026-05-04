@@ -20,7 +20,7 @@ This repo implements a custom Vitest coverage provider that enriches V8 coverage
 - CSS coverage is ignored in Node; only active in Browser mode.
 - Package exports expose Node and Browser entrypoints; use `/browser` with `@vitest/browser`.
 
-## Workflows (Node ≥ 20, pnpm)
+## Workflows (Node ≥ 20.19, pnpm)
 - Build: `pnpm build` (prod) or `pnpm build:dev` (with source maps). Output: `dist/` via `tsup`.
 - Lint/format: `pnpm check` (Biome) or `pnpm check:fix`.
 - Typecheck: `pnpm typecheck` (and `:browser`, `:tests`).

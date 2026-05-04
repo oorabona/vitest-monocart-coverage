@@ -5,13 +5,7 @@ import type { ProxifiedModule } from 'magicast'
 import { parseModule } from 'magicast'
 import type { AfterSuiteRunMeta } from 'vitest'
 import { BaseCoverageProvider } from 'vitest/coverage'
-import type {
-  CoverageProvider,
-  CoverageProviderModule,
-  ReportContext,
-  ResolvedCoverageOptions,
-  Vitest,
-} from 'vitest/node'
+import type { CoverageProvider, CoverageProviderModule, ReportContext, Vitest } from 'vitest/node'
 import { resolveMonocartConfig } from './config.js'
 import type { Logger } from './logger.js'
 import { loggerFactory } from './logger.js'
@@ -84,7 +78,7 @@ export class MonocartCoverageProvider extends BaseCoverageProvider implements Co
     return libCoverage.createCoverageMap({})
   }
 
-  resolveOptions(): ResolvedCoverageOptions {
+  resolveOptions(): ResolvedMonocartCoverageOptions {
     return this.options
   }
 
