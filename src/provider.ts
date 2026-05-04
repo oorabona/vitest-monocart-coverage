@@ -105,7 +105,7 @@ export class MonocartCoverageProvider extends BaseCoverageProvider implements Co
 
     try {
       // Debug logging to understand what we receive
-      this.logger.info(
+      this.logger.debug(
         `[provider] onAfterSuiteRun coverage type: ${typeof coverage}, hasResult: ${coverage?.result !== undefined}`,
       )
 

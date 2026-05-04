@@ -57,8 +57,8 @@ describe('MonocartCoverageProvider', () => {
     expect(provider.name).toBe('v8')
   })
 
-  it('should initialize with Vitest context', () => {
-    provider.initialize(mockCtx as Vitest)
+  it('should initialize with Vitest context', async () => {
+    await provider.initialize(mockCtx as Vitest)
 
     expect(provider.options).toBeDefined()
     expect(provider.options.provider).toBe('v8') // Internal provider uses 'v8'
@@ -137,7 +137,7 @@ describe('MonocartCoverageProvider', () => {
     // This is expected behavior - the method should only be called by Vitest with proper setup
   })
 
-  it('should handle initialization without customOptions', () => {
+  it('should handle initialization without customOptions', async () => {
     const coverageConfigWithoutCustom = {
       provider: 'custom',
       customProviderModule: '@oorabona/vitest-monocart-coverage',
@@ -158,7 +158,7 @@ describe('MonocartCoverageProvider', () => {
       },
     } as unknown as Partial<Vitest>
 
-    provider.initialize(mockCtxWithoutCustom as Vitest)
+    await provider.initialize(mockCtxWithoutCustom as Vitest)
 
     expect(provider.options).toBeDefined()
     expect(provider.options.provider).toBe('v8') // Internal provider uses 'v8'
