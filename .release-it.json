@@ -1,25 +1,13 @@
 {
-  "plugins": {
-    "@release-it/keep-a-changelog": {
-      "filename": "CHANGELOG.md",
-      "addUnreleased": true,
-      "keepUnreleased": false,
-      "addVersionUrl": true
-    }
-  },
+  "extends": "@oorabona/release-it-preset/config/default",
   "git": {
-    "commitMessage": "release: bump v${version}",
-    "tagName": "v${version}",
-    "requireBranch": "main",
-    "requireUpstream": false,
-    "requireCleanWorkingDir": false
+    "commitMessage": "chore(release): v${version}"
   },
   "github": {
     "release": true
   },
   "npm": {
     "skipChecks": true,
-    "publish": true,
-    "publishArgs": ["--provenance", "--access", "public"]
+    "publish": true
   }
 }

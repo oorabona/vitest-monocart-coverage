@@ -40,9 +40,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # Pre-flight checks
+      # Pre-flight checks (provided by @oorabona/release-it-preset)
       - name: Run pre-flight checks
-        run: pnpm tsx scripts/retry-publish.ts
+        run: pnpm release-it-preset retry-publish-preflight
 
       # Get target tag (user input or latest)
       - name: Determine target tag
@@ -121,7 +121,7 @@ jobs:
             echo "🐙 Creating GitHub Release..."
             
             # Extract changelog for this version
-            CHANGELOG=$(pnpm tsx scripts/extract-changelog.ts $VERSION || echo "Release v$VERSION")
+            CHANGELOG=$(pnpm release-it-preset extract-changelog $VERSION || echo "Release v$VERSION")
             
             # Create or update release
             gh release create "v$VERSION" \
