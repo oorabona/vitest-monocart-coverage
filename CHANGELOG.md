@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-05-04
+
+### ⚠️ BREAKING CHANGES
+- support Vitest 4, drop Vitest 3 (#38) ([dda1fa2](https://github.com/oorabona/vitest-monocart-coverage/commit/dda1fa2))
+
 ## [2.0.1] - 2025-09-09
 
 ### Added
@@ -128,10 +133,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - update CI workflow and scripts for improved coverage reporting
 
 
-[unreleased]: https://github.com/oorabona/vitest-monocart-coverage/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/oorabona/vitest-monocart-coverage/compare/v3.0.0...HEAD
 [v1.0.0]: https://github.com/oorabona/vitest-monocart-coverage/releases/tag/v1.0.0
 [v1.1.0]: git+https://github.com/oorabona/vitest-monocart-coverage.git/releases/tag/v1.1.0
 [v1.2.0]: https://github.com/oorabona/vitest-monocart-coverage/releases/tag/v1.2.0
 
 [2.0.1]: https://github.com/oorabona/vitest-monocart-coverage/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/oorabona/vitest-monocart-coverage/compare/v1.2.0...v2.0.0
+
+[v3.0.0]: https://github.com/oorabona/vitest-monocart-coverage/releases/tag/v3.0.0
+[3.0.0]: https://github.com/oorabona/vitest-monocart-coverage/releases/tag/v3.0.0
