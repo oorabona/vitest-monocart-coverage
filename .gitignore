@@ -151,3 +151,14 @@ vitest-browser-css-config.json
 test-config-temp-*/
 tests/__screenshots__/
 **/__screenshots__/
+# Workflow-internal (private to maintainer)
+*.local.md
+
+# Workflow-internal artifacts (specs, scopes, audits — public tracking via GitHub Issues)
+docs/plans/
+docs/scopes/
+docs/audit/
+
+# Claude Code runtime artifacts
+.claude/*.lock
+.claude/scheduled_tasks.lock

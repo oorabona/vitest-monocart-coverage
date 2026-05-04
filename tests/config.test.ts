@@ -953,7 +953,7 @@ describe('createSourceFilter', () => {
 
       // Restore original window state
       if (originalWindow === undefined) {
-        delete globalThis.window
+        delete (globalThis as any).window
       } else {
         globalThis.window = originalWindow
       }

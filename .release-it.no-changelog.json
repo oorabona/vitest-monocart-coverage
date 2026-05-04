@@ -1,18 +1,13 @@
 {
+  "extends": "@oorabona/release-it-preset/config/no-changelog",
   "git": {
-    "changelog": false,
-    "commitMessage": "release: bump v${version}",
-    "tagName": "v${version}",
-    "requireBranch": "main",
-    "requireUpstream": false,
-    "requireCleanWorkingDir": false
+    "commitMessage": "chore(release): v${version}"
   },
   "github": {
     "release": true
   },
   "npm": {
     "skipChecks": true,
-    "publish": true,
-    "publishArgs": ["--provenance", "--access", "public"]
+    "publish": true
   }
 }

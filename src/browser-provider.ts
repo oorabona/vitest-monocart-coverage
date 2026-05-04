@@ -10,7 +10,7 @@ import { loggerFactory } from './logger.js'
 import { MonocartReporter } from './reporter.js'
 import type {
   MonocartCoverageOptions,
-  ResolvedMonocartCoverageOptions,
+  ResolvedMonocartBrowserCoverageOptions,
   ScriptCoverageWithOffset,
 } from './types.js'
 
@@ -33,11 +33,11 @@ import type {
  * 3. Filtering and processing browser-specific file paths
  * 4. Passing enriched data to Monocart for processing and report generation
  */
-export class MonocartBrowserProvider
-  extends BaseCoverageProvider<ResolvedMonocartCoverageOptions>
-  implements CoverageProvider
-{
+export class MonocartBrowserProvider extends BaseCoverageProvider implements CoverageProvider {
   name = 'v8' as const
+
+  // Narrow the inherited `options` field to our resolved type for type-safe access
+  declare options: ResolvedMonocartBrowserCoverageOptions
 
   private reporter?: MonocartReporter
   private addQueue: Promise<void> = Promise.resolve()
@@ -70,14 +70,14 @@ export class MonocartBrowserProvider
     this.options = {
       ...coverageConfig,
       reporter: [], // Disable built-in reporters
-    } as ResolvedMonocartCoverageOptions
+    } as ResolvedMonocartBrowserCoverageOptions
   }
 
   createCoverageMap(): CoverageMap {
     return libCoverage.createCoverageMap({})
   }
 
-  resolveOptions(): ResolvedMonocartCoverageOptions {
+  resolveOptions(): ResolvedMonocartBrowserCoverageOptions {
     return this.options
   }
 

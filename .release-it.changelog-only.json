@@ -1,21 +1,3 @@
 {
-  "increment": false,
-  "hooks": {
-    "before:init": ["pnpm tsx scripts/populate-unreleased-changelog.ts"]
-  },
-  "git": {
-    "changelog": false,
-    "commit": false,
-    "commitMessage": "docs: update changelog for next release",
-    "tag": false,
-    "push": false,
-    "requireCleanWorkingDir": false
-  },
-  "npm": {
-    "publish": false,
-    "skipChecks": true
-  },
-  "github": {
-    "release": false
-  }
+  "extends": "@oorabona/release-it-preset/config/changelog-only"
 }

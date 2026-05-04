@@ -50,7 +50,6 @@ describe('Full module coverage', () => {
     })
 
     expect(config.provider).toBe('custom')
-    // @ts-expect-error - customProviderModule exists on resolved config
     expect(config.customProviderModule).toBe('@oorabona/vitest-monocart-coverage')
     // @ts-expect-error - customOptions exists on resolved config
     expect(config.customOptions.outputDir).toBe('./test-coverage')

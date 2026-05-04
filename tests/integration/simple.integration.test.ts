@@ -1,4 +1,11 @@
+/// <reference lib="dom" />
 import { expect, test } from '@playwright/test'
+
+declare global {
+  interface Window {
+    __test_results: unknown
+  }
+}
 
 test.describe('Simple Browser Integration Tests', () => {
   test('should simulate browser environment for CSS coverage validation', async ({ page }) => {
@@ -113,7 +120,7 @@ test.describe('Simple Browser Integration Tests', () => {
     await page.waitForFunction(() => window.__test_results !== undefined)
 
     // Get test results
-    const testResults = await page.evaluate(() => window.__test_results)
+    const testResults = (await page.evaluate(() => window.__test_results)) as any
 
     expect(testResults).toBeDefined()
     expect(testResults.isBrowser).toBe(true)

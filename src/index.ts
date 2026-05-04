@@ -40,6 +40,8 @@ export type {
   MonocartBrowserCoverageOptions,
   MonocartCoverageOptions,
   MonocartProviderConfig,
+  ResolvedMonocartBrowserCoverageOptions,
+  ResolvedMonocartCoverageOptions,
 } from './types.js'
 
 // Default export for Vitest custom provider usage

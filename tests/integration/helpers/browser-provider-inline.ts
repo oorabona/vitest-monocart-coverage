@@ -1,6 +1,16 @@
+/// <reference lib="dom" />
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Page } from '@playwright/test'
+
+declare global {
+  interface Window {
+    __vitest_monocart_browser_provider__: {
+      MonocartBrowserProvider: unknown
+      MonocartBrowserProviderModule: unknown
+    }
+  }
+}
 
 /**
  * Injects the browser provider module directly into the page

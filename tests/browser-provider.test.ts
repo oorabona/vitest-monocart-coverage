@@ -33,19 +33,23 @@ describe('MonocartBrowserProvider (Node)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     provider = new MonocartBrowserProvider()
+    const coverageConfig = {
+      provider: 'custom',
+      customProviderModule: '@oorabona/vitest-monocart-coverage/browser',
+      customOptions: {
+        name: 'Test Coverage',
+        outputDir: './test-coverage',
+        css: true,
+      },
+      clean: true,
+    } as unknown as ResolvedCoverageOptions
     mockCtx = {
       config: {
-        coverage: {
-          provider: 'custom',
-          customProviderModule: '@oorabana/vitest-monocart-coverage/browser',
-          customOptions: {
-            name: 'Test Coverage',
-            outputDir: './test-coverage',
-            css: true,
-          },
-          clean: true,
-        } as unknown as ResolvedCoverageOptions<'custom'>,
+        root: '/tmp',
+        coverage: coverageConfig,
       },
+      // Vitest 4: _coverageOptions is a getter on the Vitest class; plain mock needs it explicitly
+      _coverageOptions: coverageConfig,
       logger: {
         warn: vi.fn(),
         error: vi.fn(),

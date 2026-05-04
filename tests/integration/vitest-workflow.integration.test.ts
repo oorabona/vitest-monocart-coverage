@@ -1,7 +1,15 @@
+/// <reference lib="dom" />
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { expect, test } from '@playwright/test'
+
+declare global {
+  interface Window {
+    __workflow_results: unknown
+    __error_test_results: unknown
+  }
+}
 
 test.describe('Vitest Workflow Integration Tests', () => {
   let tempDir: string
@@ -28,8 +36,8 @@ test.describe('Vitest Workflow Integration Tests', () => {
         '@oorabona/vitest-monocart-coverage': `file:${process.cwd()}`,
       },
       devDependencies: {
-        vitest: '^3.0.0',
-        '@vitest/browser': '^3.0.0',
+        vitest: '^4.1.5',
+        '@vitest/browser': '^4.1.5',
         playwright: '^1.55.0',
       },
     }
@@ -264,7 +272,7 @@ test('should multiply numbers correctly', () => {
         // Simulate suite completion
         await mockProvider.onAfterSuiteRun({
           coverage: null,
-          transformMode: 'ssr',
+          environment: 'ssr',
           projectName: 'workflow-test',
           testFiles: ['test/math.test.js']
         })
@@ -392,7 +400,7 @@ test('should multiply numbers correctly', () => {
         // This should handle the missing CDP session gracefully
         await mockProvider.onAfterSuiteRun({
           coverage: null,
-          transformMode: 'ssr',
+          environment: 'ssr',
           projectName: 'error-test',
           testFiles: []
         })
@@ -424,7 +432,7 @@ test('should multiply numbers correctly', () => {
         // This should handle CDP errors gracefully
         await mockProvider2.onAfterSuiteRun({
           coverage: null,
-          transformMode: 'ssr',
+          environment: 'ssr',
           projectName: 'error-test-2',
           testFiles: []
         })
