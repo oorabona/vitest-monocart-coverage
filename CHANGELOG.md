@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.1] - 2026-05-05
+
+### Fixed
+- correct package name typo and enable codecov uploads (#40) ([2bd38e3](https://github.com/oorabona/vitest-monocart-coverage/commit/2bd38e3))
+
 ## [3.0.0] - 2026-05-04
 
 ### ⚠️ BREAKING CHANGES
@@ -133,7 +138,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - update CI workflow and scripts for improved coverage reporting
 
 
-[Unreleased]: https://github.com/oorabona/vitest-monocart-coverage/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/oorabona/vitest-monocart-coverage/compare/v3.0.1...HEAD
 [v1.0.0]: https://github.com/oorabona/vitest-monocart-coverage/releases/tag/v1.0.0
 [v1.1.0]: git+https://github.com/oorabona/vitest-monocart-coverage.git/releases/tag/v1.1.0
 [v1.2.0]: https://github.com/oorabona/vitest-monocart-coverage/releases/tag/v1.2.0
@@ -143,3 +148,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [v3.0.0]: https://github.com/oorabona/vitest-monocart-coverage/releases/tag/v3.0.0
 [3.0.0]: https://github.com/oorabona/vitest-monocart-coverage/releases/tag/v3.0.0
+[v3.0.1]: https://github.com/oorabona/vitest-monocart-coverage/releases/tag/v3.0.1
+[3.0.1]: https://github.com/oorabona/vitest-monocart-coverage/releases/tag/v3.0.1
