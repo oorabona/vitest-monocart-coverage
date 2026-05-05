@@ -21,6 +21,9 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     name: Validate (Lint, Test)
+    permissions:
+      contents: read
+      id-token: write   # required for codecov OIDC tokenless
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -34,14 +37,20 @@ jobs:
       # - run: pnpm run typecheck:tests
       - run: pnpm run test:coverage
       - run: pnpm run test:coverage:self:prod
-      # - uses: codecov/codecov-action@v4
-      #   with:
-      #     files: ./coverage/coverage-final.json
-      #     fail_ci_if_error: true
-      # - uses: codecov/codecov-action@v4
-      #   with:
-      #     files: ./self-coverage/lcov.info
-      #     fail_ci_if_error: true
+      - name: Upload V8 coverage to codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./coverage/coverage-final.json
+          flags: v8
+          fail_ci_if_error: true
+          use_oidc: true
+      - name: Upload Monocart self-coverage to codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./self-coverage/lcov.info
+          flags: monocart
+          fail_ci_if_error: true
+          use_oidc: true
 
   build:
     runs-on: ubuntu-latest

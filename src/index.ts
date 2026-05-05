@@ -9,7 +9,7 @@
  * ```typescript
  * // vitest.config.ts
  * import { defineConfig } from 'vitest/config'
- * import { withMonocartProvider } from '@oorabana/vitest-monocart-coverage'
+ * import { withMonocartProvider } from '@oorabona/vitest-monocart-coverage'
  *
  * export default defineConfig({
  *   test: {
