@@ -1,6 +1,6 @@
 # @oorabona/vitest-monocart-coverage
 
-[![npm version](https://badge.fury.io/js/@oorabona%2Fvitest-monocart-coverage.svg)](https://badge.fury.io/js/@oorabona%2Fvitest-monocart-coverage)
+[![npm version](https://img.shields.io/npm/v/@oorabona/vitest-monocart-coverage.svg)](https://www.npmjs.com/package/@oorabona/vitest-monocart-coverage)
 [![CI](https://github.com/oorabona/vitest-monocart-coverage/actions/workflows/ci.yml/badge.svg)](https://github.com/oorabona/vitest-monocart-coverage/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/oorabona/vitest-monocart-coverage/branch/main/graph/badge.svg)](https://codecov.io/gh/oorabona/vitest-monocart-coverage)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
